@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crash Game</title>
+    <style>
+        .crash-game-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .crash-display {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .crash-multiplier {
+            font-size: 80px;
+            font-weight: bold;
+            color: #4ade80;
+            text-shadow: 0 0 30px rgba(74, 222, 128, 0.6);
+            margin-bottom: 15px;
+            transition: all 0.1s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .crash-multiplier.crashed {
+            color: #ef4444;
+            text-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+        }
+
+        .crash-multiplier.cashed-out {
+            color: #fbbf24;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+        }
+
+        .crash-status {
+            font-size: 20px;
+            color: white;
+            margin-top: 10px;
+            min-height: 30px;
+        }
+
+        .crash-potential {
+            font-size: 18px;
+            color: #fbbf24;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .crash-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .quick-bet-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-bet-btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-bet-btn:hover:not(:disabled) {
+            background: #e5e7eb;
+            border-color: #667eea;
+        }
+
+        .quick-bet-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .game-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-bet {
+            background: #4ade80;
+            color: white;
+        }
+
+        .btn-bet:hover:not(:disabled) {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .btn-cashout {
+            background: #fbbf24;
+            color: #1f2937;
+        }
+
+        .btn-cashout:hover:not(:disabled) {
+            background: #f59e0b;
+            transform: translateY(-2px);
+        }
+
+        .btn-skip {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-skip:hover:not(:disabled) {
+            background: #4f46e5;
+            transform: translateY(-2px);
+        }
+
+        .crash-history {
+            margin-top: 30px;
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .history-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .history-items {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .history-item {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .history-item.win {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .history-item.loss {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .history-multiplier {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .history-profit {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .crash-multiplier {
+                font-size: 60px;
+            }
+
+            .control-row {
+                flex-direction: column;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="crash-game-container">
+        <div class="crash-display">
+            <div class="crash-multiplier" id="crashMultiplier">1.00x</div>
+            <div class="crash-status" id="crashStatus">Place your bet to start!</div>
+            <div class="crash-potential" id="crashPotential"></div>
+        </div>
+
+        <div class="crash-controls">
+            <div class="control-row">
+                <div class="control-group">
+                    <label class="control-label">Bet Amount</label>
+                    <input type="number" class="control-input" id="betAmount" placeholder="Enter bet amount" min="1" step="1">
+                    <div class="quick-bet-group">
+                        <button class="quick-bet-btn" onclick="CrashGame.setBet('half')">1/2x</button>
+                        <button class="quick-bet-btn" onclick="CrashGame.setBet('double')">2x</button>
+                        <button class="quick-bet-btn" onclick="CrashGame.setBet('allin')">All In</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Auto Cashout At (Optional)</label>
+                    <input type="number" class="control-input" id="autoCashout" placeholder="e.g., 2.00" min="1.01" step="0.01">
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="game-btn btn-bet" id="betBtn" onclick="CrashGame.placeBet()">Place Bet</button>
+                <button class="game-btn btn-cashout" id="cashoutBtn" onclick="CrashGame.cashOut()" disabled>Cash Out</button>
+                <button class="game-btn btn-skip" id="skipBtn" onclick="CrashGame.skip()" disabled style="display: none;">Skip</button>
+            </div>
+        </div>
+
+        <div class="crash-history">
+            <div class="history-title">Recent Results</div>
+            <div class="history-items" id="crashHistory"></div>
+        </div>
+    </div>
+
+    <script>
+        const CrashGame = {
+            currentBet: 0,
+            lastBet: 0,
+            multiplier: 1.00,
+            crashPoint: 0,
+            isRunning: false,
+            hasCashedOut: false,
+            cashoutMultiplier: 0,
+            animationInterval: null,
+            history: [],
+            autoCashoutValue: null,
+
+            init() {
+                this.updateUI();
+            },
+
+            setBet(type) {
+                const betInput = document.getElementById('betAmount');
+                const currentValue = parseFloat(betInput.value) || 0;
+                const balance = getCurrentBalance();
+
+                switch(type) {
+                    case 'half':
+                        if (currentValue > 0) {
+                            betInput.value = Math.floor((currentValue / 2) * 100) / 100;
+                        } else if (this.lastBet > 0) {
+                            betInput.value = Math.floor((this.lastBet / 2) * 100) / 100;
+                        }
+                        break;
+                    case 'double':
+                        if (currentValue > 0) {
+                            betInput.value = Math.min(Math.floor((currentValue * 2) * 100) / 100, Math.floor(balance * 100) / 100);
+                        } else if (this.lastBet > 0) {
+                            betInput.value = Math.min(Math.floor((this.lastBet * 2) * 100) / 100, Math.floor(balance * 100) / 100);
+                        }
+                        break;
+                    case 'allin':
+                        betInput.value = Math.floor(balance * 100) / 100;
+                        break;
+                }
+            },
+
+            generateCrashPoint() {
+                const rand = Math.random();
+                if (rand < 0.7) {
+                    return 1.1 + Math.random() * 3.9;
+                } else if (rand < 0.95) {
+                    return 5 + Math.random() * 15;
+                } else {
+                    return 20 + Math.random() * 80;
+                }
+            },
+
+            placeBet() {
+                let betAmount = parseFloat(document.getElementById('betAmount').value);
+                const balance = getCurrentBalance();
+
+                if (!betAmount || betAmount <= 0) {
+                    alert('Please enter a valid bet amount!');
+                    return;
+                }
+
+                // Round to 2 decimals to avoid precision issues
+                betAmount = Math.floor(betAmount * 100) / 100;
+                const roundedBalance = Math.floor(balance * 100) / 100;
+
+                if (betAmount > roundedBalance) {
+                    alert('Insufficient balance!');
+                    return;
+                }
+
+                this.currentBet = betAmount;
+                this.lastBet = betAmount;
+                updateBalance(-betAmount);
+
+                const autoCashout = parseFloat(document.getElementById('autoCashout').value);
+                this.autoCashoutValue = autoCashout > 1 ? autoCashout : null;
+
+                this.startGame();
+            },
+
+            startGame() {
+                this.isRunning = true;
+                this.hasCashedOut = false;
+                this.cashoutMultiplier = 0;
+                this.multiplier = 1.00;
+                this.crashPoint = this.generateCrashPoint();
+
+                document.getElementById('betBtn').disabled = true;
+                document.getElementById('cashoutBtn').disabled = false;
+                document.getElementById('betAmount').disabled = true;
+                document.getElementById('autoCashout').disabled = true;
+                document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = true);
+
+                const multiplierEl = document.getElementById('crashMultiplier');
+                const statusEl = document.getElementById('crashStatus');
+                const potentialEl = document.getElementById('crashPotential');
+
+                multiplierEl.className = 'crash-multiplier';
+                statusEl.textContent = '🚀 Rocket is flying!';
+
+                this.animationInterval = setInterval(() => {
+                    if (this.multiplier >= this.crashPoint) {
+                        this.crash();
+                    } else {
+                        this.multiplier += 0.01;
+                        multiplierEl.textContent = this.multiplier.toFixed(2) + 'x';
+
+                        if (!this.hasCashedOut) {
+                            const profit = this.currentBet * (this.multiplier - 1);
+                            potentialEl.textContent = `Profit: $${profit.toFixed(2)}`;
+
+                            // Auto cashout
+                            if (this.autoCashoutValue && this.multiplier >= this.autoCashoutValue) {
+                                this.cashOut();
+                            }
+                        }
+                    }
+                }, 50);
+            },
+
+            cashOut() {
+                if (!this.isRunning || this.hasCashedOut) return;
+
+                this.hasCashedOut = true;
+                this.cashoutMultiplier = this.multiplier;
+                const winAmount = this.currentBet * this.multiplier;
+                const profit = winAmount - this.currentBet;
+
+                updateBalance(winAmount);
+
+                document.getElementById('crashMultiplier').className = 'crash-multiplier cashed-out';
+                document.getElementById('crashStatus').textContent = 
+                    `✅ Cashed out at ${this.cashoutMultiplier.toFixed(2)}x! Profit: $${profit.toFixed(2)}`;
+                document.getElementById('crashPotential').textContent = 
+                    `Rocket will crash at ${this.crashPoint.toFixed(2)}x`;
+                document.getElementById('cashoutBtn').disabled = true;
+                document.getElementById('skipBtn').style.display = 'block';
+                document.getElementById('skipBtn').disabled = false;
+
+                // Only count as win if multiplier >= 1.3x
+                const isWin = this.cashoutMultiplier >= 1.3;
+                if (currentUser) {
+                    updateGameStats('crash', isWin, this.currentBet, winAmount);
+                }
+            },
+
+            crash() {
+                clearInterval(this.animationInterval);
+                this.isRunning = false;
+
+                const multiplierEl = document.getElementById('crashMultiplier');
+                const statusEl = document.getElementById('crashStatus');
+                const potentialEl = document.getElementById('crashPotential');
+
+                multiplierEl.textContent = this.crashPoint.toFixed(2) + 'x';
+                multiplierEl.className = 'crash-multiplier crashed';
+
+                if (this.hasCashedOut) {
+                    const couldHaveWon = this.currentBet * this.crashPoint;
+                    const couldHaveProfit = couldHaveWon - this.currentBet;
+                    statusEl.textContent = `💥 Crashed at ${this.crashPoint.toFixed(2)}x! You could have won $${couldHaveProfit.toFixed(2)} more`;
+                    this.addToHistory(this.crashPoint, true, this.currentBet * this.cashoutMultiplier - this.currentBet);
+                } else {
+                    statusEl.textContent = `💥 Crashed at ${this.crashPoint.toFixed(2)}x! Lost $${this.currentBet.toFixed(2)}`;
+                    this.addToHistory(this.crashPoint, false, -this.currentBet);
+
+                    if (currentUser) {
+                        updateGameStats('crash', false, this.currentBet, 0);
+                    }
+                }
+
+                potentialEl.textContent = '';
+                document.getElementById('cashoutBtn').disabled = true;
+
+                this.resetGame();
+            },
+
+            skip() {
+                clearInterval(this.animationInterval);
+                this.multiplier = this.crashPoint;
+                document.getElementById('crashMultiplier').textContent = this.crashPoint.toFixed(2) + 'x';
+                this.crash();
+                document.getElementById('skipBtn').style.display = 'none';
+            },
+
+            resetGame() {
+                setTimeout(() => {
+                    document.getElementById('betBtn').disabled = false;
+                    document.getElementById('betAmount').disabled = false;
+                    document.getElementById('autoCashout').disabled = false;
+                    document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = false);
+                    document.getElementById('crashMultiplier').textContent = '1.00x';
+                    document.getElementById('crashMultiplier').className = 'crash-multiplier';
+                    document.getElementById('crashStatus').textContent = 'Place your bet to start!';
+                    document.getElementById('crashPotential').textContent = '';
+                    document.getElementById('skipBtn').style.display = 'none';
+                    this.currentBet = 0;
+                }, 3000);
+            },
+
+            addToHistory(multiplier, won, profitLoss) {
+                this.history.unshift({ multiplier, won, profitLoss });
+                if (this.history.length > 10) this.history.pop();
+
+                const historyHTML = this.history.map(item => 
+                    `<div class="history-item ${item.won ? 'win' : 'loss'}">
+                        <div class="history-multiplier">${item.multiplier.toFixed(2)}x</div>
+                        <div class="history-profit">${item.profitLoss >= 0 ? '+' : ''}$${item.profitLoss.toFixed(2)}</div>
+                    </div>`
+                ).join('');
+
+                document.getElementById('crashHistory').innerHTML = historyHTML;
+            },
+
+            updateUI() {
+                document.getElementById('crashHistory').innerHTML = 
+                    '<div style="text-align: center; color: #999;">No history yet</div>';
+            }
+        };
+
+        if (typeof currentUser === 'undefined') {
+            let currentUser = null;
+        }
+        CrashGame.init();
+    </script>
+</body>
+</html>

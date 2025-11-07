@@ -1,0 +1,637 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Theme Variables */
+:root[data-theme="light"] {
+    --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-secondary: white;
+    --text-primary: #333;
+    --text-secondary: #666;
+    --text-tertiary: #999;
+    --border-color: #e5e7eb;
+    --card-bg: white;
+    --card-shadow: rgba(0, 0, 0, 0.1);
+    --input-bg: white;
+}
+
+:root[data-theme="dark"] {
+    --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    --bg-secondary: #0f3460;
+    --text-primary: #e5e7eb;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --border-color: #374151;
+    --card-bg: #1f2937;
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    --input-bg: #374151;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--text-primary);
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Main Content */
+.main-content {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    transition: transform 0.3s ease;
+}
+
+.main-content.menu-open {
+    transform: translateX(280px);
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+/* Buttons */
+.btn-primary {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+}
+
+.back-btn {
+    background: #e5e7eb;
+    color: #333;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: background 0.3s;
+}
+
+.back-btn:hover {
+    background: #d1d5db;
+}
+
+/* Level Section */
+.level-section {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px var(--card-shadow);
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.rank-badge {
+    font-size: 80px;
+    margin-bottom: 15px;
+}
+
+.rank-name {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.xp-bar-container {
+    width: 100%;
+    max-width: 400px;
+    height: 30px;
+    background: var(--border-color);
+    border-radius: 15px;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+.xp-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+/* Games Grid */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.game-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px var(--card-shadow);
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px var(--card-shadow);
+}
+
+.game-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+}
+
+.game-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+/* Login Section */
+.login-section {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px var(--card-shadow);
+}
+
+.login-section h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--text-primary);
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.error-message {
+    color: #ef4444;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.switch-mode {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-secondary);
+}
+
+.switch-mode a {
+    color: #667eea;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 5px 15px var(--card-shadow);
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Leaderboard */
+.leaderboard-container {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px var(--card-shadow);
+}
+
+.game-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.game-tab {
+    padding: 10px 20px;
+    background: var(--card-bg);
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #667eea;
+    transition: all 0.3s;
+}
+
+.game-tab.active {
+    background: #667eea;
+    color: white;
+}
+
+.game-tab:hover:not(.active) {
+    background: var(--border-color);
+}
+
+.leaderboard-table h2 {
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.3s;
+}
+
+.leaderboard-item:hover {
+    background: var(--border-color);
+}
+
+.leaderboard-item.highlight {
+    background: #fef3c7;
+    font-weight: bold;
+    border-left: 4px solid #f59e0b;
+}
+
+.leaderboard-rank {
+    font-weight: bold;
+    color: #667eea;
+    width: 40px;
+}
+
+.leaderboard-user {
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.leaderboard-wins {
+    font-weight: bold;
+    color: #22c55e;
+}
+
+/* Game Page */
+.game-container {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px var(--card-shadow);
+}
+
+.game-container h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--text-primary);
+}
+
+/* Delete Account Button */
+.delete-account-btn {
+    background: #ef4444;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.delete-account-btn:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: 10% auto;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h2 {
+    font-size: 28px;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.modal-amount {
+    font-size: 42px;
+    font-weight: bold;
+    color: #667eea;
+    margin: 25px 0;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.modal-btn {
+    padding: 14px 35px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.modal-btn-confirm {
+    background: #4ade80;
+    color: white;
+}
+
+.modal-btn-confirm:hover {
+    background: #22c55e;
+    transform: translateY(-2px);
+}
+
+.modal-btn-cancel {
+    background: #ef4444;
+    color: white;
+}
+
+.modal-btn-cancel:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+/* Credit Card Style */
+.credit-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 25px 0;
+    color: white;
+    text-align: left;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.credit-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+}
+
+.card-chip {
+    width: 45px;
+    height: 35px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 6px;
+    margin-bottom: 25px;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.card-number {
+    font-size: 24px;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.card-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.card-holder, .card-expiry {
+    position: relative;
+}
+
+.card-holder div:last-child, 
+.card-expiry div:last-child {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Success Modal */
+.success-modal {
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    color: white;
+}
+
+.success-modal h2 {
+    color: white;
+}
+
+.success-modal .modal-amount {
+    color: white;
+}
+
+.success-icon {
+    font-size: 70px;
+    margin-bottom: 20px;
+    animation: successPop 0.5s ease-out;
+}
+
+@keyframes successPop {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Theme Switcher */
+.theme-switcher {
+    font-weight: 600;
+}
+
+#themeIcon {
+    font-size: 24px;
+}
+
+/* Game Controls (for all games) */
+.control-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.control-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.control-label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.control-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: border-color 0.3s;
+}
+
+.control-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 0 15px;
+        margin: 20px auto;
+    }
+
+    .games-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .game-icon {
+        font-size: 40px;
+    }
+
+    .game-title {
+        font-size: 18px;
+    }
+
+    .rank-badge {
+        font-size: 60px;
+    }
+
+    .rank-name {
+        font-size: 24px;
+    }
+
+    .modal-content {
+        padding: 30px 20px;
+        margin: 20% auto;
+    }
+
+    .modal-amount {
+        font-size: 32px;
+    }
+
+    .card-number {
+        font-size: 18px;
+    }
+}

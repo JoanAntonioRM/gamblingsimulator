@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plinko Game</title>
+    <style>
+        .plinko-game-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .plinko-display {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plinko-board {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .plinko-pegs {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+
+        .peg-row {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .peg {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 20px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .multiplier-slots {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 20px;
+            flex-wrap: nowrap;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .multiplier-slot {
+            flex: 1;
+            padding: 10px 5px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .multiplier-slot.active {
+            background: #fbbf24 !important;
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .multiplier-low { background: #22c55e; }
+        .multiplier-medium { background: #f59e0b; }
+        .multiplier-high { background: #ef4444; }
+
+        .plinko-ball {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #fbbf24;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);
+            z-index: 100;
+            display: none;
+        }
+
+        .plinko-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .risk-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .risk-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .risk-btn.active.low {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+
+        .risk-btn.active.medium {
+            background: #f59e0b;
+            color: white;
+            border-color: #f59e0b;
+        }
+
+        .risk-btn.active.high {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .rows-selector {
+            margin-bottom: 25px;
+        }
+
+        .rows-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .rows-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .row-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .row-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .quick-bet-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-bet-btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-bet-btn:hover:not(:disabled) {
+            background: #e5e7eb;
+            border-color: #667eea;
+        }
+
+        .quick-bet-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .game-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #4ade80;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .game-btn:hover:not(:disabled) {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-display {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .result-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .result-multiplier {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .result-amount {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .result-amount.win {
+            color: #22c55e;
+        }
+
+        .result-amount.loss {
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .plinko-board {
+                min-height: 400px;
+            }
+
+            .peg {
+                margin: 0 10px;
+            }
+
+            .multiplier-slot {
+                font-size: 11px;
+                padding: 8px 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="plinko-game-container">
+        <div class="plinko-display">
+            <div class="plinko-board" id="plinkoBoard">
+                <div class="plinko-ball" id="plinkoBall"></div>
+                <div id="plinkoPegs" class="plinko-pegs"></div>
+                <div class="multiplier-slots" id="multiplierSlots"></div>
+            </div>
+        </div>
+
+        <div class="plinko-controls">
+            <div class="rows-selector">
+                <div class="rows-label">Number of Rows</div>
+                <div class="rows-buttons">
+                    <button class="row-btn" onclick="PlinkoGame.setRows(8)">8</button>
+                    <button class="row-btn" onclick="PlinkoGame.setRows(9)">9</button>
+                    <button class="row-btn" onclick="PlinkoGame.setRows(10)">10</button>
+                    <button class="row-btn" onclick="PlinkoGame.setRows(11)">11</button>
+                    <button class="row-btn" onclick="PlinkoGame.setRows(12)">12</button>
+                    <button class="row-btn" onclick="PlinkoGame.setRows(13)">13</button>
+                    <button class="row-btn" onclick="PlinkoGame.setRows(14)">14</button>
+                    <button class="row-btn" onclick="PlinkoGame.setRows(15)">15</button>
+                    <button class="row-btn active" onclick="PlinkoGame.setRows(16)">16</button>
+                </div>
+            </div>
+
+            <div class="risk-selector">
+                <button class="risk-btn active low" onclick="PlinkoGame.setRisk('low')">Low Risk</button>
+                <button class="risk-btn medium" onclick="PlinkoGame.setRisk('medium')">Medium Risk</button>
+                <button class="risk-btn high" onclick="PlinkoGame.setRisk('high')">High Risk</button>
+            </div>
+
+            <div class="control-row">
+                <div class="control-group">
+                    <label class="control-label">Bet Amount</label>
+                    <input type="number" class="control-input" id="betAmount" placeholder="Enter bet amount" min="1" step="1">
+                    <div class="quick-bet-group">
+                        <button class="quick-bet-btn" onclick="PlinkoGame.setBet('half')">1/2x</button>
+                        <button class="quick-bet-btn" onclick="PlinkoGame.setBet('double')">2x</button>
+                        <button class="quick-bet-btn" onclick="PlinkoGame.setBet('allin')">All In</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="game-btn" id="dropBtn" onclick="PlinkoGame.drop()">Drop Ball</button>
+        </div>
+
+        <div class="result-display" id="resultDisplay" style="display: none;">
+            <div class="result-text">Result</div>
+            <div class="result-multiplier" id="resultMultiplier">0x</div>
+            <div class="result-amount" id="resultAmount">$0.00</div>
+        </div>
+    </div>
+
+    <script>
+        const PlinkoGame = {
+            rows: 16,
+            risk: 'low',
+            lastBet: 0,
+            isDropping: false,
+
+            multipliers: {
+                low: {
+                    8: [5.6, 2.1, 1.1, 1, 0.5, 1, 1.1, 2.1, 5.6],
+                    9: [5.6, 2, 1.6, 1, 0.7, 0.7, 1, 1.6, 2, 5.6],
+                    10: [8.9, 3, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 3, 8.9],
+                    11: [8.4, 3, 1.9, 1.3, 1, 0.7, 0.7, 1, 1.3, 1.9, 3, 8.4],
+                    12: [10, 3, 1.6, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 1.6, 3, 10],
+                    13: [8.1, 4, 3, 1.9, 1.2, 0.9, 0.7, 0.7, 0.9, 1.2, 1.9, 3, 4, 8.1],
+                    14: [7.1, 4, 1.9, 1.4, 1.3, 1.1, 1, 0.5, 1, 1.1, 1.3, 1.4, 1.9, 4, 7.1],
+                    15: [15, 8, 3, 2, 1.5, 1.1, 1, 0.7, 0.7, 1, 1.1, 1.5, 2, 3, 8, 15],
+                    16: [16, 9, 2, 1.4, 1.4, 1.2, 1.1, 1, 0.5, 1, 1.1, 1.2, 1.4, 1.4, 2, 9, 16]
+                },
+                medium: {
+                    8: [13, 3, 1.3, 0.7, 0.4, 0.7, 1.3, 3, 13],
+                    9: [18, 4, 1.7, 0.9, 0.5, 0.5, 0.9, 1.7, 4, 18],
+                    10: [22, 5, 2, 1.4, 0.6, 0.4, 0.4, 0.6, 1.4, 2, 5, 22],
+                    11: [24, 6, 3, 1.8, 0.7, 0.5, 0.5, 0.5, 0.7, 1.8, 3, 6, 24],
+                    12: [33, 11, 4, 2, 1.1, 0.6, 0.3, 0.3, 0.6, 1.1, 2, 4, 11, 33],
+                    13: [43, 13, 6, 3, 1.3, 0.7, 0.4, 0.4, 0.4, 0.7, 1.3, 3, 6, 13, 43],
+                    14: [58, 15, 7, 4, 1.9, 1, 0.5, 0.2, 0.2, 0.5, 1, 1.9, 4, 7, 15, 58],
+                    15: [88, 18, 11, 5, 3, 1.3, 0.5, 0.3, 0.3, 0.3, 0.5, 1.3, 3, 5, 11, 18, 88],
+                    16: [110, 41, 10, 5, 3, 1.5, 1, 0.5, 0.3, 0.5, 1, 1.5, 3, 5, 10, 41, 110]
+                },
+                high: {
+                    8: [29, 4, 1.5, 0.3, 0.2, 0.3, 1.5, 4, 29],
+                    9: [43, 7, 2, 0.6, 0.2, 0.2, 0.2, 0.6, 2, 7, 43],
+                    10: [76, 10, 3, 0.9, 0.3, 0.2, 0.2, 0.2, 0.3, 0.9, 3, 10, 76],
+                    11: [120, 14, 5.2, 1.4, 0.4, 0.2, 0.2, 0.2, 0.2, 0.4, 1.4, 5.2, 14, 120],
+                    12: [170, 24, 8.1, 2, 0.7, 0.2, 0.2, 0.2, 0.2, 0.2, 0.7, 2, 8.1, 24, 170],
+                    13: [260, 37, 11, 4, 1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1, 4, 11, 37, 260],
+                    14: [420, 56, 18, 5, 1.9, 0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 1.9, 5, 18, 56, 420],
+                    15: [620, 83, 27, 8, 3, 0.5, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.5, 3, 8, 27, 83, 620],
+                    16: [1000, 130, 26, 9, 4, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 2, 4, 9, 26, 130, 1000]
+                }
+            },
+
+            init() {
+                this.renderBoard();
+            },
+
+            setRows(rows) {
+                if (this.isDropping) return;
+                this.rows = rows;
+                document.querySelectorAll('.row-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                this.renderBoard();
+            },
+
+            setRisk(risk) {
+                if (this.isDropping) return;
+                this.risk = risk;
+                document.querySelectorAll('.risk-btn').forEach(btn => {
+                    btn.classList.remove('active', 'low', 'medium', 'high');
+                });
+                event.target.classList.add('active', risk);
+                this.renderBoard();
+            },
+
+            renderBoard() {
+                const pegsContainer = document.getElementById('plinkoPegs');
+                pegsContainer.innerHTML = '';
+
+                for (let row = 0; row < this.rows; row++) {
+                    const pegRow = document.createElement('div');
+                    pegRow.className = 'peg-row';
+                    
+                    for (let peg = 0; peg <= row; peg++) {
+                        const pegEl = document.createElement('div');
+                        pegEl.className = 'peg';
+                        pegRow.appendChild(pegEl);
+                    }
+                    
+                    pegsContainer.appendChild(pegRow);
+                }
+
+                const multipliersContainer = document.getElementById('multiplierSlots');
+                multipliersContainer.innerHTML = '';
+                const multipliers = this.multipliers[this.risk][this.rows];
+
+                multipliers.forEach(mult => {
+                    const slot = document.createElement('div');
+                    slot.className = `multiplier-slot multiplier-${this.risk}`;
+                    slot.textContent = mult + 'x';
+                    multipliersContainer.appendChild(slot);
+                });
+            },
+
+            setBet(type) {
+                const betInput = document.getElementById('betAmount');
+                const currentValue = parseFloat(betInput.value) || 0;
+                const balance = getCurrentBalance();
+
+                switch(type) {
+                    case 'half':
+                        if (currentValue > 0) {
+                            betInput.value = Math.floor((currentValue / 2) * 100) / 100;
+                        } else if (this.lastBet > 0) {
+                            betInput.value = Math.floor((this.lastBet / 2) * 100) / 100;
+                        }
+                        break;
+                    case 'double':
+                        if (currentValue > 0) {
+                            betInput.value = Math.min(Math.floor((currentValue * 2) * 100) / 100, Math.floor(balance * 100) / 100);
+                        } else if (this.lastBet > 0) {
+                            betInput.value = Math.min(Math.floor((this.lastBet * 2) * 100) / 100, Math.floor(balance * 100) / 100);
+                        }
+                        break;
+                    case 'allin':
+                        betInput.value = Math.floor(balance * 100) / 100;
+                        break;
+                }
+            },
+
+            drop() {
+                if (this.isDropping) return;
+
+                let betAmount = parseFloat(document.getElementById('betAmount').value);
+                const balance = getCurrentBalance();
+
+                if (!betAmount || betAmount <= 0) {
+                    alert('Please enter a valid bet amount!');
+                    return;
+                }
+
+                betAmount = Math.floor(betAmount * 100) / 100;
+                const roundedBalance = Math.floor(balance * 100) / 100;
+
+                if (betAmount > roundedBalance) {
+                    alert('Insufficient balance!');
+                    return;
+                }
+
+                this.lastBet = betAmount;
+                this.isDropping = true;
+                updateBalance(-betAmount);
+
+                document.getElementById('dropBtn').disabled = true;
+                document.getElementById('betAmount').disabled = true;
+                document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = true);
+                document.querySelectorAll('.risk-btn').forEach(btn => btn.disabled = true);
+                document.querySelectorAll('.row-btn').forEach(btn => btn.disabled = true);
+                document.getElementById('resultDisplay').style.display = 'none';
+
+                this.animateDrop(betAmount);
+            },
+
+            animateDrop(betAmount) {
+                const ball = document.getElementById('plinkoBall');
+                const board = document.getElementById('plinkoBoard');
+                const boardRect = board.getBoundingClientRect();
+                
+                let position = 0;
+                const path = [];
+
+                for (let i = 0; i < this.rows; i++) {
+                    const direction = Math.random() < 0.5 ? -1 : 1;
+                    position += direction;
+                    path.push(position);
+                }
+
+                ball.style.left = '50%';
+                ball.style.top = '20px';
+                ball.style.display = 'block';
+
+                let step = 0;
+                const dropInterval = setInterval(() => {
+                    if (step >= this.rows) {
+                        clearInterval(dropInterval);
+                        
+                        const slotIndex = Math.floor((position + this.rows) / 2);
+                        const actualSlot = Math.max(0, Math.min(slotIndex, this.rows));
+                        
+                        const slots = document.querySelectorAll('.multiplier-slot');
+                        slots[actualSlot].classList.add('active');
+                        
+                        setTimeout(() => {
+                            ball.style.display = 'none';
+                            slots[actualSlot].classList.remove('active');
+                            this.showResult(actualSlot, betAmount);
+                        }, 500);
+                    } else {
+                        const currentPosition = path[step];
+                        const xOffset = (currentPosition / this.rows) * 300;
+                        const yOffset = (step / this.rows) * 400;
+                        
+                        ball.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+                        step++;
+                    }
+                }, 150);
+            },
+
+            showResult(slotIndex, betAmount) {
+                const multipliers = this.multipliers[this.risk][this.rows];
+                const multiplier = multipliers[slotIndex];
+                const winAmount = betAmount * multiplier;
+                const profit = winAmount - betAmount;
+
+                updateBalance(winAmount);
+
+                const resultDisplay = document.getElementById('resultDisplay');
+                const resultMultiplier = document.getElementById('resultMultiplier');
+                const resultAmount = document.getElementById('resultAmount');
+
+                resultMultiplier.textContent = multiplier + 'x';
+                resultAmount.textContent = (profit >= 0 ? '+' : '') + '$' + profit.toFixed(2);
+                resultAmount.className = 'result-amount ' + (profit >= 0 ? 'win' : 'loss');
+                resultDisplay.style.display = 'block';
+
+                if (currentUser) {
+                    updateGameStats('plinko', profit > 0, betAmount, winAmount);
+                }
+
+                setTimeout(() => {
+                    this.isDropping = false;
+                    document.getElementById('dropBtn').disabled = false;
+                    document.getElementById('betAmount').disabled = false;
+                    document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = false);
+                    document.querySelectorAll('.risk-btn').forEach(btn => btn.disabled = false);
+                    document.querySelectorAll('.row-btn').forEach(btn => btn.disabled = false);
+                }, 1000);
+            }
+        };
+
+        if (typeof currentUser === 'undefined') {
+            let currentUser = null;
+        }
+        PlinkoGame.init();
+    </script>
+</body>
+</html>

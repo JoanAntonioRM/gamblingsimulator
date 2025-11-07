@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Game</title>
+    <style>
+        .dice-game-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .dice-display {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .dice-slider-container {
+            position: relative;
+            padding: 40px 20px;
+        }
+
+        .dice-numbers {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .dice-slider-track {
+            width: 100%;
+            height: 50px;
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            background: #ef4444;
+        }
+
+        .dice-slider-win-zone {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: #22c55e;
+            transition: all 0.2s;
+            pointer-events: none;
+        }
+
+        .dice-result-marker {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: white;
+            box-shadow: 0 0 10px rgba(255,255,255,0.8);
+            transform: translateX(-2px);
+            display: none;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .dice-slider-input {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 50px;
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .dice-slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 30px;
+            height: 50px;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .dice-slider-input::-moz-range-thumb {
+            width: 30px;
+            height: 50px;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .dice-target-value {
+            text-align: center;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .dice-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+
+        .dice-stat {
+            text-align: center;
+        }
+
+        .dice-stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .dice-stat-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .dice-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .dice-mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .dice-result-display {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 30px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .dice-result-number {
+            font-size: 72px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .dice-result-number.win {
+            color: #22c55e;
+        }
+
+        .dice-result-number.loss {
+            color: #ef4444;
+        }
+
+        .dice-result-text {
+            font-size: 20px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .quick-bet-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-bet-btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-bet-btn:hover:not(:disabled) {
+            background: #e5e7eb;
+            border-color: #667eea;
+        }
+
+        .quick-bet-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .game-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #4ade80;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .game-btn:hover:not(:disabled) {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .dice-history {
+            margin-top: 30px;
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .history-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .history-items {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .history-item {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .history-item.win {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .history-item.loss {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .dice-target-value {
+                font-size: 36px;
+            }
+
+            .dice-stat-value {
+                font-size: 24px;
+            }
+
+            .dice-result-number {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dice-game-container">
+        <div class="dice-display">
+            <div class="dice-slider-container">
+                <div class="dice-numbers">
+                    <span>0</span>
+                    <span>25</span>
+                    <span>50</span>
+                    <span>75</span>
+                    <span>100</span>
+                </div>
+                <div class="dice-slider-track">
+                    <div class="dice-slider-win-zone" id="winZone"></div>
+                    <div class="dice-result-marker" id="resultMarker"></div>
+                    <input type="range" class="dice-slider-input" id="diceSlider" min="2" max="98" value="50" step="0.01">
+                </div>
+                <div class="dice-target-value" id="targetValue">50.00</div>
+            </div>
+
+            <div class="dice-stats">
+                <div class="dice-stat">
+                    <div class="dice-stat-value" id="multiplierValue">1.98x</div>
+                    <div class="dice-stat-label">Multiplier</div>
+                </div>
+                <div class="dice-stat">
+                    <div class="dice-stat-value" id="winChanceValue">50.00%</div>
+                    <div class="dice-stat-label">Win Chance</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dice-controls">
+            <div class="dice-mode-toggle">
+                <button class="mode-btn active" id="rollOverBtn" onclick="DiceGame.setMode('over')">Roll Over</button>
+                <button class="mode-btn" id="rollUnderBtn" onclick="DiceGame.setMode('under')">Roll Under</button>
+            </div>
+
+            <div class="control-row">
+                <div class="control-group">
+                    <label class="control-label">Bet Amount</label>
+                    <input type="number" class="control-input" id="betAmount" placeholder="Enter bet amount" min="1" step="1">
+                    <div class="quick-bet-group">
+                        <button class="quick-bet-btn" onclick="DiceGame.setBet('half')">1/2x</button>
+                        <button class="quick-bet-btn" onclick="DiceGame.setBet('double')">2x</button>
+                        <button class="quick-bet-btn" onclick="DiceGame.setBet('allin')">All In</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="game-btn" id="rollBtn" onclick="DiceGame.roll()">Roll Dice</button>
+        </div>
+
+        <div class="dice-result-display" id="resultDisplay">
+            <div style="color: #999;">Roll the dice to see results!</div>
+        </div>
+
+        <div class="dice-history">
+            <div class="history-title">Recent Results</div>
+            <div class="history-items" id="diceHistory"></div>
+        </div>
+    </div>
+
+    <script>
+        const DiceGame = {
+            targetNumber: 50.00,
+            mode: 'over',
+            lastBet: 0,
+            isRolling: false,
+            history: [],
+            sliderInitialized: false,
+
+            init() {
+                if (!this.sliderInitialized) {
+                    const slider = document.getElementById('diceSlider');
+                    slider.addEventListener('input', () => this.updateSlider());
+                    this.sliderInitialized = true;
+                }
+                this.updateSlider();
+                this.updateHistory();
+            },
+
+            setMode(mode) {
+                if (this.isRolling) return;
+                this.mode = mode;
+                document.getElementById('rollOverBtn').classList.toggle('active', mode === 'over');
+                document.getElementById('rollUnderBtn').classList.toggle('active', mode === 'under');
+                this.updateSlider();
+            },
+
+            updateSlider() {
+                const slider = document.getElementById('diceSlider');
+                let value = parseFloat(slider.value);
+                
+                // Enforce limits: 2% (98x) to 98% (1.01x)
+                if (value < 2) value = 2;
+                if (value > 98) value = 98;
+                slider.value = value;
+                
+                this.targetNumber = value;
+
+                const targetEl = document.getElementById('targetValue');
+                const winZone = document.getElementById('winZone');
+                const multiplierEl = document.getElementById('multiplierValue');
+                const winChanceEl = document.getElementById('winChanceValue');
+                
+                if (!targetEl || !winZone || !multiplierEl || !winChanceEl) return;
+
+                targetEl.textContent = value.toFixed(2);
+
+                if (this.mode === 'over') {
+                    winZone.style.left = value + '%';
+                    winZone.style.width = (100 - value) + '%';
+                } else {
+                    winZone.style.left = '0%';
+                    winZone.style.width = value + '%';
+                }
+
+                let winChance;
+                if (this.mode === 'over') {
+                    winChance = 100 - value;
+                } else {
+                    winChance = value;
+                }
+
+                const multiplier = (99 / winChance).toFixed(2);
+
+                winChanceEl.textContent = winChance.toFixed(2) + '%';
+                multiplierEl.textContent = multiplier + 'x';
+            },
+
+            setBet(type) {
+                const betInput = document.getElementById('betAmount');
+                const currentValue = parseFloat(betInput.value) || 0;
+                const balance = getCurrentBalance();
+
+                switch(type) {
+                    case 'half':
+                        if (currentValue > 0) {
+                            betInput.value = Math.floor((currentValue / 2) * 100) / 100;
+                        } else if (this.lastBet > 0) {
+                            betInput.value = Math.floor((this.lastBet / 2) * 100) / 100;
+                        }
+                        break;
+                    case 'double':
+                        if (currentValue > 0) {
+                            betInput.value = Math.min(Math.floor((currentValue * 2) * 100) / 100, Math.floor(balance * 100) / 100);
+                        } else if (this.lastBet > 0) {
+                            betInput.value = Math.min(Math.floor((this.lastBet * 2) * 100) / 100, Math.floor(balance * 100) / 100);
+                        }
+                        break;
+                    case 'allin':
+                        betInput.value = Math.floor(balance * 100) / 100;
+                        break;
+                }
+            },
+
+            roll() {
+                if (this.isRolling) return;
+
+                let betAmount = parseFloat(document.getElementById('betAmount').value);
+                const balance = getCurrentBalance();
+
+                if (!betAmount || betAmount <= 0) {
+                    alert('Please enter a valid bet amount!');
+                    return;
+                }
+
+                betAmount = Math.floor(betAmount * 100) / 100;
+                const roundedBalance = Math.floor(balance * 100) / 100;
+
+                if (betAmount > roundedBalance) {
+                    alert('Insufficient balance!');
+                    return;
+                }
+
+                this.lastBet = betAmount;
+                this.isRolling = true;
+                updateBalance(-betAmount);
+
+                document.getElementById('rollBtn').disabled = true;
+                document.getElementById('diceSlider').disabled = true;
+                document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = true);
+                document.getElementById('resultMarker').style.display = 'none';
+
+                this.animateRoll(betAmount);
+            },
+
+            animateRoll(betAmount) {
+                const resultDisplay = document.getElementById('resultDisplay');
+                let counter = 0;
+                const animationInterval = setInterval(() => {
+                    const randomNum = (Math.random() * 100).toFixed(2);
+                    resultDisplay.innerHTML = `
+                        <div class="dice-result-number">${randomNum}</div>
+                        <div class="dice-result-text">Rolling...</div>
+                    `;
+                    counter++;
+
+                    if (counter >= 20) {
+                        clearInterval(animationInterval);
+                        this.showResult(betAmount);
+                    }
+                }, 50);
+            },
+
+            showResult(betAmount) {
+                const rolledNumber = parseFloat((Math.random() * 100).toFixed(2));
+                const resultDisplay = document.getElementById('resultDisplay');
+                const resultMarker = document.getElementById('resultMarker');
+                
+                let won = false;
+                if (this.mode === 'over') {
+                    won = rolledNumber > this.targetNumber;
+                } else {
+                    won = rolledNumber < this.targetNumber;
+                }
+
+                resultMarker.style.left = rolledNumber + '%';
+                resultMarker.style.display = 'block';
+
+                const winChance = this.mode === 'over' ? (100 - this.targetNumber) : this.targetNumber;
+                const multiplier = 99 / winChance;
+                const winAmount = won ? betAmount * multiplier : 0;
+                const profit = won ? winAmount - betAmount : -betAmount;
+
+                if (won) {
+                    updateBalance(winAmount);
+                    resultDisplay.innerHTML = `
+                        <div class="dice-result-number win">${rolledNumber.toFixed(2)}</div>
+                        <div class="dice-result-text" style="color: #22c55e;">
+                            🎉 You Won! +$${profit.toFixed(2)}
+                        </div>
+                    `;
+
+                    if (currentUser) {
+                        updateGameStats('dice', true, betAmount, winAmount);
+                    }
+                } else {
+                    resultDisplay.innerHTML = `
+                        <div class="dice-result-number loss">${rolledNumber.toFixed(2)}</div>
+                        <div class="dice-result-text" style="color: #ef4444;">
+                            💥 You Lost! -$${betAmount.toFixed(2)}
+                        </div>
+                    `;
+
+                    if (currentUser) {
+                        updateGameStats('dice', false, betAmount, 0);
+                    }
+                }
+
+                this.addToHistory(rolledNumber, won, profit);
+
+                setTimeout(() => {
+                    this.isRolling = false;
+                    document.getElementById('rollBtn').disabled = false;
+                    document.getElementById('diceSlider').disabled = false;
+                    document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = false);
+                }, 2000);
+            },
+
+            addToHistory(number, won, profitLoss) {
+                this.history.unshift({ number, won, profitLoss });
+                if (this.history.length > 10) this.history.pop();
+                this.updateHistory();
+            },
+
+            updateHistory() {
+                const historyEl = document.getElementById('diceHistory');
+                if (!historyEl) return;
+                
+                const historyHTML = this.history.length > 0 
+                    ? this.history.map(item => 
+                        `<div class="history-item ${item.won ? 'win' : 'loss'}">
+                            ${item.number.toFixed(2)}<br>
+                            <small>${item.profitLoss >= 0 ? '+' : ''}$${item.profitLoss.toFixed(2)}</small>
+                        </div>`
+                    ).join('')
+                    : '<div style="text-align: center; color: #999;">No history yet</div>';
+                
+                historyEl.innerHTML = historyHTML;
+            }
+        };
+
+        if (typeof currentUser === 'undefined') {
+            let currentUser = null;
+        }
+        
+        // Initialize immediately and reinitialize when page becomes visible
+        DiceGame.init();
+        
+        // Reinitialize when navigating back to the page
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                setTimeout(() => DiceGame.updateSlider(), 100);
+            }
+        });
+    </script>
+</body>
+</html>

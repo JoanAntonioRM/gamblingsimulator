@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Simulator</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/games.css">
+</head>
+<body data-theme="light">
+    <!-- Header -->
+    <header class="header">
+        <button class="hamburger-menu" id="hamburgerBtn" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="logo" onclick="navigateTo('main')">🎰 Casino Sim</div>
+        <div class="header-center">
+            <div class="balance-display" id="headerBalance" onclick="handleBalanceClick()" style="cursor: pointer;" title="Click to add funds">$10,000.00</div>
+        </div>
+        <div class="user-section" onclick="handleUserClick()">
+            <div class="user-icon" id="userIcon">👤</div>
+            <span class="username" id="headerUsername">Login</span>
+            <button class="logout-btn hidden" id="logoutBtn" onclick="event.stopPropagation(); logout()">Logout</button>
+        </div>
+    </header>
+
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="side-menu-header">
+            <h3>Menu</h3>
+            <button class="close-menu" onclick="toggleMenu()">✕</button>
+        </div>
+        <div class="menu-section">
+            <div class="menu-title">Games</div>
+            <div class="menu-item" onclick="navigateTo('crash'); toggleMenu();">
+                <span class="menu-icon">🚀</span> Crash
+            </div>
+            <div class="menu-item" onclick="navigateTo('dice'); toggleMenu();">
+                <span class="menu-icon">🎲</span> Dice
+            </div>
+            <div class="menu-item" onclick="navigateTo('blackjack'); toggleMenu();">
+                <span class="menu-icon">🃏</span> Blackjack
+            </div>
+            <div class="menu-item" onclick="navigateTo('plinko'); toggleMenu();">
+                <span class="menu-icon">🎯</span> Plinko
+            </div>
+            <div class="menu-item" onclick="navigateTo('mines'); toggleMenu();">
+                <span class="menu-icon">💎</span> Mines
+            </div>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" onclick="navigateTo('shop'); toggleMenu();">
+            <span class="menu-icon">🛒</span> Shop Points
+        </div>
+        <div class="menu-item" onclick="navigateTo('leaderboard'); toggleMenu();">
+            <span class="menu-icon">🏆</span> Leaderboard
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item theme-switcher" onclick="toggleTheme()">
+            <span class="menu-icon">
+                <span id="themeIcon">🌙</span>
+            </span>
+            <span id="themeText">Dark Mode</span>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+    <!-- Main Content Container -->
+    <div class="main-content" id="mainContent">
+        <!-- Dynamic content will be loaded here -->
+    </div>
+
+    <!-- Load JavaScript files -->
+    <script src="js/storage.js"></script>
+    <script src="js/ranking.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
