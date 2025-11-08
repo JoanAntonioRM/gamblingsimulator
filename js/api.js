@@ -5,7 +5,7 @@
 
 const API = {
     // IMPORTANT: Change this to your Railway backend URL after deployment
-    BASE_URL: 'http://localhost:3000/api',
+    BASE_URL: 'https://gamblingsimulator-production.up.railway.app/api',
     
     // Get auth token from localStorage
     getToken() {
