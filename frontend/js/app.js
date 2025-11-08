@@ -1,34 +1,65 @@
 /**
- * app.js - Main Application Logic
- * Handles page navigation, UI updates, and coordination
+ * app.js - Updated Main Application (Part 1 of 2)
+ * Now uses backend API for all data operations
  */
 
-// Global state
 let currentUser = null;
 let guestBalance = 1000;
 let currentPage = 'main';
 
-// Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
 
-/**
- * Initialize the application
- */
-function initializeApp() {
-    currentUser = Storage.loadCurrentUser();
-    if (!currentUser) {
-        guestBalance = Storage.getGuestBalance();
+async function initializeApp() {
+    // Check if backend is available
+    const isBackendUp = await API.healthCheck();
+    
+    if (!isBackendUp) {
+        console.warn('Backend server not available. Using guest mode only.');
+        showBackendOfflineMessage();
     }
+    
+    // Try to load user from token
+    if (API.getToken()) {
+        try {
+            currentUser = await API.getProfile();
+        } catch (error) {
+            console.error('Failed to load user:', error);
+            API.clearToken();
+            currentUser = null;
+        }
+    }
+    
+    if (!currentUser) {
+        guestBalance = parseFloat(localStorage.getItem('guestBalance')) || 1000;
+    }
+    
     initializeTheme();
     updateHeaderUI();
     navigateTo('main');
 }
 
-/**
- * Toggle side menu open/closed
- */
+function showBackendOfflineMessage() {
+    const message = document.createElement('div');
+    message.style.cssText = `
+        position: fixed;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ef4444;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 8px;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    message.textContent = '⚠️ Backend server offline. Running in guest mode only.';
+    document.body.appendChild(message);
+    
+    setTimeout(() => message.remove(), 5000);
+}
+
 function toggleMenu() {
     const menu = document.getElementById('sideMenu');
     const overlay = document.getElementById('menuOverlay');
@@ -41,15 +72,10 @@ function toggleMenu() {
     content.classList.toggle('menu-open');
 }
 
-/**
- * Navigate to a specific page
- * @param {string} page - Page name to navigate to
- */
 async function navigateTo(page) {
     currentPage = page;
     const content = document.getElementById('mainContent');
     
-    // Load page content
     switch(page) {
         case 'main':
             loadMainPage(content);
@@ -62,10 +88,10 @@ async function navigateTo(page) {
                 navigateTo('login');
                 return;
             }
-            loadUserPage(content);
+            await loadUserPage(content);
             break;
         case 'leaderboard':
-            loadLeaderboardPage(content);
+            await loadLeaderboardPage(content);
             break;
         case 'shop':
             loadShopPage(content);
@@ -81,13 +107,9 @@ async function navigateTo(page) {
             loadMainPage(content);
     }
     
-    // Scroll to top
     window.scrollTo(0, 0);
 }
 
-/**
- * Load main page content
- */
 function loadMainPage(content) {
     if (currentUser) {
         content.innerHTML = `
@@ -147,14 +169,15 @@ function loadMainPage(content) {
                     <div class="game-icon">🎯</div>
                     <div class="game-title">Plinko</div>
                 </div>
+                <div class="game-card" onclick="navigateTo('mines')">
+                    <div class="game-icon">💎</div>
+                    <div class="game-title">Mines</div>
+                </div>
             </div>
         `;
     }
 }
 
-/**
- * Load login/register page
- */
 function loadLoginPage(content) {
     content.innerHTML = `
         <div class="login-section">
@@ -177,11 +200,15 @@ function loadLoginPage(content) {
     `;
 }
 
-/**
- * Load user profile page
- */
-function loadUserPage(content) {
+async function loadUserPage(content) {
     if (!currentUser) return;
+    
+    // Refresh user data
+    try {
+        currentUser = await API.getProfile();
+    } catch (error) {
+        console.error('Failed to refresh user data:', error);
+    }
     
     const profit = currentUser.totalWon - currentUser.totalLost;
     
@@ -201,41 +228,18 @@ function loadUserPage(content) {
                 </div>
                 <div class="stat-label">${profit >= 0 ? 'Profit' : 'Loss'}</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value">${currentUser.games.crash.played}</div>
-                <div class="stat-label">🚀 Crash Games</div>
-                <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
-                    W: ${currentUser.games.crash.won} / L: ${currentUser.games.crash.lost}
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${currentUser.games.dice.played}</div>
-                <div class="stat-label">🎲 Dice Games</div>
-                <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
-                    W: ${currentUser.games.dice.won} / L: ${currentUser.games.dice.lost}
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${currentUser.games.blackjack.played}</div>
-                <div class="stat-label">🃏 Blackjack Games</div>
-                <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
-                    W: ${currentUser.games.blackjack.won} / L: ${currentUser.games.blackjack.lost}
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${currentUser.games.plinko.played}</div>
-                <div class="stat-label">🎯 Plinko Games</div>
-                <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
-                    W: ${currentUser.games.plinko.won} / L: ${currentUser.games.plinko.lost}
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${currentUser.games.mines.played}</div>
-                <div class="stat-label">💎 Mines Games</div>
-                <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
-                    W: ${currentUser.games.mines.won} / L: ${currentUser.games.mines.lost}
-                </div>
-            </div>
+            ${Object.entries(currentUser.games).map(([game, stats]) => {
+                const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎' };
+                return `
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.played}</div>
+                        <div class="stat-label">${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)} Games</div>
+                        <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
+                            W: ${stats.won} / L: ${stats.lost}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
         </div>
         <div style="margin-top: 40px; text-align: center;">
             <button class="delete-account-btn" onclick="confirmDeleteAccount()">
@@ -245,9 +249,6 @@ function loadUserPage(content) {
     `;
 }
 
-/**
- * Load shop page
- */
 function loadShopPage(content) {
     if (currentUser) {
         content.innerHTML = `
@@ -262,17 +263,8 @@ function loadShopPage(content) {
                         The shop is coming soon!
                     </p>
                     <p style="font-size: 16px; color: var(--text-tertiary);">
-                        Keep playing and winning games to earn more shop points.<br>
-                        Soon you'll be able to customize your profile with unique items!
+                        Keep playing and winning games to earn more shop points.
                     </p>
-                    <div style="margin-top: 40px; padding: 30px; background: var(--border-color); border-radius: 15px; display: inline-block;">
-                        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 10px;">💡 <strong>How to earn points:</strong></p>
-                        <ul style="list-style: none; text-align: left; color: var(--text-secondary);">
-                            <li>✓ Win games to earn XP</li>
-                            <li>✓ Rank up to earn bonus shop points</li>
-                            <li>✓ Higher ranks = more shop points per level</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         `;
@@ -283,13 +275,10 @@ function loadShopPage(content) {
                 <h1>🛒 Shop Points Store</h1>
                 <div style="text-align: center; margin: 40px 0;">
                     <div style="font-size: 60px; margin-bottom: 20px;">🔒</div>
-                    <p style="font-size: 18px; color: var(--text-secondary); margin-bottom: 20px;">
-                        The shop is coming soon!
+                    <p style="font-size: 18px; color: var(--text-secondary);">
+                        Create an account to start earning shop points!
                     </p>
-                    <p style="font-size: 16px; color: var(--text-tertiary); margin-bottom: 30px;">
-                        Create an account to start earning shop points and unlock exclusive profile customizations!
-                    </p>
-                    <button class="btn-primary" style="max-width: 300px; margin: 0 auto;" onclick="navigateTo('login')">
+                    <button class="btn-primary" style="max-width: 300px; margin: 20px auto;" onclick="navigateTo('login')">
                         Create Account / Login
                     </button>
                 </div>
@@ -298,10 +287,7 @@ function loadShopPage(content) {
     }
 }
 
-/**
- * Load leaderboard page
- */
-function loadLeaderboardPage(content) {
+async function loadLeaderboardPage(content) {
     const games = ['crash', 'dice', 'blackjack', 'plinko', 'mines'];
     const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎' };
     
@@ -313,7 +299,6 @@ function loadLeaderboardPage(content) {
         </div>
     `;
     
-    // Generate tabs
     const tabsHTML = games.map(game => `
         <div class="game-tab ${game === 'crash' ? 'active' : ''}" onclick="Leaderboard.showGame('${game}')">
             ${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)}
@@ -321,12 +306,9 @@ function loadLeaderboardPage(content) {
     `).join('');
     
     document.getElementById('leaderboardTabs').innerHTML = tabsHTML;
-    Leaderboard.showGame('crash');
+    await Leaderboard.showGame('crash');
 }
 
-/**
- * Load game page
- */
 async function loadGamePage(content, game) {
     content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
     
@@ -338,7 +320,6 @@ async function loadGamePage(content, game) {
         gameContainer.innerHTML = html;
         content.appendChild(gameContainer);
         
-        // Execute game scripts
         const scripts = gameContainer.querySelectorAll('script');
         scripts.forEach(script => {
             const newScript = document.createElement('script');
@@ -351,16 +332,12 @@ async function loadGamePage(content, game) {
                 <h1>Loading...</h1>
                 <div style="text-align: center; color: var(--text-secondary); margin: 40px 0;">
                     <p>Game is loading...</p>
-                    <p style="margin-top: 20px; font-size: 14px;">Make sure the games folder exists with ${game}.html</p>
                 </div>
             </div>
         `;
     }
 }
 
-/**
- * Update header UI
- */
 function updateHeaderUI() {
     if (currentUser) {
         document.getElementById('headerUsername').textContent = currentUser.username;
@@ -375,9 +352,6 @@ function updateHeaderUI() {
     }
 }
 
-/**
- * Handle user icon click
- */
 function handleUserClick() {
     if (currentUser) {
         navigateTo('user');
@@ -386,9 +360,6 @@ function handleUserClick() {
     }
 }
 
-/**
- * Handle balance click - show add funds modal
- */
 function handleBalanceClick() {
     if (!currentUser) {
         showGuestLimitModal();
@@ -397,9 +368,6 @@ function handleBalanceClick() {
     }
 }
 
-/**
- * Show guest limit modal
- */
 function showGuestLimitModal() {
     const modal = document.createElement('div');
     modal.className = 'modal';
@@ -409,15 +377,8 @@ function showGuestLimitModal() {
             <h2>🔒 Guest Account Limit</h2>
             <p style="color: var(--text-secondary); margin: 20px 0;">
                 As a guest, you have a limited balance of $1,000.<br><br>
-                Create an account to get $10,000 starting balance and unlock:
+                Create an account to unlock unlimited features!
             </p>
-            <ul style="list-style: none; color: var(--text-secondary); line-height: 2;">
-                <li>✓ Unlimited funds</li>
-                <li>✓ Save your progress</li>
-                <li>✓ Earn XP and rank up</li>
-                <li>✓ Appear on leaderboards</li>
-                <li>✓ Earn shop points</li>
-            </ul>
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-confirm" onclick="this.closest('.modal').remove(); navigateTo('login');">Create Account</button>
                 <button class="modal-btn modal-btn-cancel" onclick="this.closest('.modal').remove();">Continue as Guest</button>
@@ -427,9 +388,6 @@ function showGuestLimitModal() {
     document.body.appendChild(modal);
 }
 
-/**
- * Show add funds modal
- */
 function showAddFundsModal() {
     const modal = document.createElement('div');
     modal.className = 'modal';
@@ -464,47 +422,39 @@ function showAddFundsModal() {
     document.body.appendChild(modal);
 }
 
-/**
- * Process add funds
- */
-function processAddFunds() {
+async function processAddFunds() {
     const amount = parseFloat(document.getElementById('addFundsAmount').value);
     if (isNaN(amount) || amount <= 0) {
         alert('Please enter a valid amount');
         return;
     }
 
-    // Remove current modal
     document.querySelector('.modal').remove();
 
-    // Show Apple Pay style success modal
-    const successModal = document.createElement('div');
-    successModal.className = 'modal';
-    successModal.style.display = 'block';
-    successModal.innerHTML = `
-        <div class="modal-content success-modal">
-            <div class="success-icon">✓</div>
-            <h2>Payment Successful!</h2>
-            <div class="modal-amount">$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
-            <p>has been added to your account</p>
-        </div>
-    `;
-    document.body.appendChild(successModal);
+    try {
+        const result = await API.addFunds(amount);
+        currentUser.balance = result.balance;
+        updateHeaderUI();
 
-    // Add funds to user
-    currentUser.balance += amount;
-    Storage.saveCurrentUser(currentUser);
-    updateHeaderUI();
+        const successModal = document.createElement('div');
+        successModal.className = 'modal';
+        successModal.style.display = 'block';
+        successModal.innerHTML = `
+            <div class="modal-content success-modal">
+                <div class="success-icon">✓</div>
+                <h2>Payment Successful!</h2>
+                <div class="modal-amount">$${amount.toFixed(2)}</div>
+                <p>has been added to your account</p>
+            </div>
+        `;
+        document.body.appendChild(successModal);
 
-    // Auto close after 2 seconds
-    setTimeout(() => {
-        successModal.remove();
-    }, 2000);
+        setTimeout(() => successModal.remove(), 2000);
+    } catch (error) {
+        alert('Failed to add funds: ' + error.message);
+    }
 }
 
-/**
- * Confirm delete account
- */
 function confirmDeleteAccount() {
     const modal = document.createElement('div');
     modal.className = 'modal';
@@ -512,21 +462,11 @@ function confirmDeleteAccount() {
     modal.innerHTML = `
         <div class="modal-content" style="border: 3px solid #ef4444;">
             <h2 style="color: #ef4444;">⚠️ Delete Account</h2>
-            <p style="color: var(--text-secondary); margin: 20px 0; line-height: 1.6;">
-                Are you sure you want to delete your account?<br><br>
-                <strong>This action cannot be undone!</strong><br><br>
-                You will lose:
+            <p style="color: var(--text-secondary); margin: 20px 0;">
+                Are you sure? This cannot be undone!
             </p>
-            <ul style="list-style: none; color: #ef4444; line-height: 2; font-weight: bold;">
-                <li>• All your progress and stats</li>
-                <li>• Your rank and XP (${currentUser.xp} XP)</li>
-                <li>• Your shop points (${currentUser.shopPoints} points)</li>
-                <li>• Your balance ($${currentUser.balance.toFixed(2)})</li>
-                <li>• Your leaderboard position</li>
-                <li>• Any future profile customizations</li>
-            </ul>
-            <div class="modal-buttons" style="margin-top: 30px;">
-                <button class="modal-btn" style="background: #ef4444; color: white;" onclick="deleteAccount()">Yes, Delete My Account</button>
+            <div class="modal-buttons">
+                <button class="modal-btn" style="background: #ef4444; color: white;" onclick="deleteAccount()">Yes, Delete</button>
                 <button class="modal-btn modal-btn-confirm" onclick="this.closest('.modal').remove();">Cancel</button>
             </div>
         </div>
@@ -534,155 +474,137 @@ function confirmDeleteAccount() {
     document.body.appendChild(modal);
 }
 
-/**
- * Delete account
- */
-function deleteAccount() {
-    const username = currentUser.username;
-    Storage.deleteUser(username);
-    currentUser = null;
-    guestBalance = 1000;
-    Storage.saveGuestBalance(guestBalance);
-    
-    document.querySelector('.modal').remove();
-    
-    // Show confirmation
-    const confirmModal = document.createElement('div');
-    confirmModal.className = 'modal';
-    confirmModal.style.display = 'block';
-    confirmModal.innerHTML = `
-        <div class="modal-content">
-            <h2>Account Deleted</h2>
-            <p style="color: var(--text-secondary); margin: 20px 0;">
-                Your account has been successfully deleted.<br>
-                All your data has been removed from our system.
-            </p>
-            <button class="btn-primary" onclick="this.closest('.modal').remove(); navigateTo('main');">Continue</button>
-        </div>
-    `;
-    document.body.appendChild(confirmModal);
-    
-    updateHeaderUI();
+async function deleteAccount() {
+    try {
+        await API.deleteAccount();
+        document.querySelector('.modal').remove();
+        
+        currentUser = null;
+        updateHeaderUI();
+        navigateTo('main');
+        
+        alert('Account deleted successfully');
+    } catch (error) {
+        alert('Failed to delete account: ' + error.message);
+    }
 }
 
-/**
- * Handle user logout
- */
-function logout() {
+async function logout() {
+    Auth.logout();
     currentUser = null;
-    Storage.clearCurrentUser();
     guestBalance = 1000;
-    Storage.saveGuestBalance(guestBalance);
+    localStorage.setItem('guestBalance', guestBalance);
     updateHeaderUI();
     navigateTo('main');
 }
 
-/**
- * Handle authentication (login/register)
- */
-function handleAuth() {
-    Auth.handleAuth((user) => {
+async function handleAuth() {
+    await Auth.handleAuth(async (user) => {
         currentUser = user;
-        Storage.clearGuestBalance(); // Clear guest progress
+        localStorage.removeItem('guestBalance');
         updateHeaderUI();
         navigateTo('main');
     });
 }
 
-/**
- * Update balance (for games to call)
- * @param {number} amount - Amount to add/subtract (negative to subtract)
- */
-function updateBalance(amount) {
+async function updateBalance(amount) {
     if (currentUser) {
-        currentUser.balance += amount;
-        if (currentUser.balance < 0) currentUser.balance = 0;
-        Storage.saveCurrentUser(currentUser);
+        try {
+            const result = await API.updateBalance(amount);
+            currentUser.balance = result.balance;
+            updateHeaderUI();
+        } catch (error) {
+            console.error('Failed to update balance:', error);
+        }
     } else {
         guestBalance += amount;
         if (guestBalance < 0) guestBalance = 0;
-        Storage.saveGuestBalance(guestBalance);
+        localStorage.setItem('guestBalance', guestBalance);
+        updateHeaderUI();
     }
-    updateHeaderUI();
 }
 
-/**
- * Get current balance
- * @returns {number} Current balance
- */
 function getCurrentBalance() {
     return currentUser ? currentUser.balance : guestBalance;
 }
 
-/**
- * Update game stats (for games to call)
- */
-function updateGameStats(game, won, betAmount, winAmount) {
+async function updateGameStats(game, won, betAmount, winAmount) {
     if (!currentUser) return;
 
-    Storage.updateGameStats(currentUser, game, won, betAmount, winAmount);
+    try {
+        await API.updateGameStats(game, won, betAmount, winAmount);
 
-    if (won) {
-        const xpResult = Ranking.awardXP(currentUser, betAmount, winAmount);
-        
-        if (xpResult.rankedUp) {
-            showRankUpNotification(xpResult.newRank);
+        if (won) {
+            const baseXP = Math.floor(betAmount / 10);
+            const winMultiplier = winAmount / betAmount;
+            const bonusXP = winMultiplier > 2 ? Math.floor(baseXP * 0.5) : 0;
+            const totalXP = baseXP + bonusXP;
+
+            const oldRank = Ranking.getRank(currentUser.xp);
+            currentUser.xp += totalXP;
+            const newRank = Ranking.getRank(currentUser.xp);
+
+            if (newRank.index > oldRank.index) {
+                await API.updateXP(totalXP, newRank.shopPoints);
+                currentUser.shopPoints += newRank.shopPoints;
+                showRankUpNotification(newRank);
+            } else {
+                await API.updateXP(totalXP, 0);
+            }
         }
-    }
 
-    updateHeaderUI();
+        // Refresh user data
+        currentUser = await API.getProfile();
+        updateHeaderUI();
+    } catch (error) {
+        console.error('Failed to update game stats:', error);
+    }
 }
 
-/**
- * Show rank up notification
- */
 function showRankUpNotification(newRank) {
     alert(`🎉 Rank Up! You are now ${newRank.name} ${newRank.emoji}!\nYou earned ${newRank.shopPoints} shop points!`);
 }
 
-/**
- * Leaderboard helper object
- */
 const Leaderboard = {
     currentGame: 'crash',
     
-    showGame(game) {
+    async showGame(game) {
         this.currentGame = game;
         
-        // Update active tab
         document.querySelectorAll('.game-tab').forEach(tab => {
             tab.classList.remove('active');
         });
         event.target.classList.add('active');
         
-        // Load leaderboard
-        const leaderboard = Storage.getLeaderboard(game, 25);
-        const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯' };
-        
-        let html = `<h2>${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)} Leaderboard</h2>`;
-        
-        if (leaderboard.length === 0) {
-            html += '<div style="text-align: center; color: var(--text-secondary); padding: 40px;">No games played yet</div>';
-        } else {
-            leaderboard.forEach((user, index) => {
-                const isCurrentUser = currentUser && user.username === currentUser.username;
-                html += `
-                    <div class="leaderboard-item ${isCurrentUser ? 'highlight' : ''}">
-                        <div class="leaderboard-rank">#${index + 1}</div>
-                        <div class="leaderboard-user">${user.username}</div>
-                        <div class="leaderboard-wins">${user.wins} wins</div>
-                    </div>
-                `;
-            });
+        try {
+            const leaderboard = await API.getLeaderboard(game);
+            const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎' };
+            
+            let html = `<h2>${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)} Leaderboard</h2>`;
+            
+            if (leaderboard.length === 0) {
+                html += '<div style="text-align: center; color: var(--text-secondary); padding: 40px;">No games played yet</div>';
+            } else {
+                leaderboard.forEach((user, index) => {
+                    const isCurrentUser = currentUser && user.username === currentUser.username;
+                    html += `
+                        <div class="leaderboard-item ${isCurrentUser ? 'highlight' : ''}">
+                            <div class="leaderboard-rank">#${index + 1}</div>
+                            <div class="leaderboard-user">${user.username}</div>
+                            <div class="leaderboard-wins">${user.won} wins</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('leaderboardContent').innerHTML = html;
+        } catch (error) {
+            document.getElementById('leaderboardContent').innerHTML = 
+                '<div style="text-align: center; color: #ef4444; padding: 40px;">Failed to load leaderboard</div>';
         }
-        
-        document.getElementById('leaderboardContent').innerHTML = html;
     }
 };
 
-/**
- * Theme Management
- */
 function initializeTheme() {
     const savedTheme = localStorage.getItem('casinoTheme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
