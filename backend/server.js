@@ -15,19 +15,41 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
 
-// Middleware
-// Replace the current CORS configuration (around line 17) with:
+// CORS Configuration - FIXED
+const allowedOrigins = [
+    'https://gamblingsimulator.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5500',
+    'http://localhost:8080',
+    'http://127.0.0.1:5500'
+];
+
+// Add FRONTEND_URL from environment if it exists
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-    origin: [
-        'https://gamblingsimulator.vercel.app',
-        'http://localhost:3000',
-        'http://localhost:5500',
-        process.env.FRONTEND_URL
-    ].filter(Boolean),
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('Blocked by CORS:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
+
+app.use(express.json());
 
 // PostgreSQL Database setup
 const pool = new Pool({
@@ -423,5 +445,5 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📊 Database: PostgreSQL`);
     console.log(`🔐 JWT authentication enabled`);
-    console.log(`🌍 CORS enabled for: ${process.env.FRONTEND_URL || 'all origins'}`);
+    console.log(`🌍 CORS enabled for: ${allowedOrigins.join(', ')}`);
 });
