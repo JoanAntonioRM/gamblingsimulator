@@ -204,9 +204,9 @@ async function loadUserPage(content) {
     } catch (error) {
         console.error('Failed to refresh user data:', error);
     }
-
-    const profit = currentUser.profit - currentUser.totalLost;
-
+    
+    const profit = currentUser.totalWon - currentUser.totalLost;
+    
     content.innerHTML = `
         <button class="back-btn" onclick="navigateTo('main')">← Back</button>
         <div class="level-section">
@@ -258,6 +258,9 @@ function loadShopPage(content) {
                         The shop is coming soon!
                     </p>
                     <p style="font-size: 16px; color: var(--text-tertiary);">
+                        You can use shop points to redeem exclusive profile customization items.
+                    </p>
+                    <p style="font-size: 16px; color: var(--text-tertiary);">
                         Keep playing and winning games to earn more shop points.
                     </p>
                 </div>
@@ -272,6 +275,12 @@ function loadShopPage(content) {
                     <div style="font-size: 60px; margin-bottom: 20px;">🔒</div>
                     <p style="font-size: 18px; color: var(--text-secondary);">
                         Create an account to start earning shop points!
+                    </p>
+                    <p style="font-size: 16px; color: var(--text-tertiary);">
+                        By creating an account, you can save your progress and earn rewards!
+                    </p>
+                    <p style="font-size: 16px; color: var(--text-tertiary);">
+                        Already have an account? <a href="#" onclick="navigateTo('login')">Login here</a>
                     </p>
                     <button class="btn-primary" style="max-width: 300px; margin: 20px auto;" onclick="navigateTo('login')">
                         Create Account / Login
@@ -372,7 +381,11 @@ function showGuestLimitModal() {
             <h2>🔒 Guest Account Limit</h2>
             <p style="color: var(--text-secondary); margin: 20px 0;">
                 As a guest, you have a limited balance of $1,000.<br><br>
-                Create an account to unlock unlimited features!
+                Create an account to unlock unlimited features!<br>
+                By creating an account, you can save your progress and earn rewards.
+            </p>
+            <p style="font-size: 14px; color: var(--text-tertiary);">
+                You already have an account? <a href="#" onclick="this.closest('.modal').remove(); navigateTo('login');">Login here</a>
             </p>
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-confirm" onclick="this.closest('.modal').remove(); navigateTo('login');">Create Account</button>
@@ -392,7 +405,7 @@ function showAddFundsModal() {
             <h2>Add Funds</h2>
             <div class="credit-card">
                 <div class="card-chip"></div>
-                <div class="card-number">•••• •••• •••• 4242</div>
+                <div class="card-number">•••• •••• •••• 0247</div>
                 <div class="card-info">
                     <div class="card-holder">
                         <div style="font-size: 10px; opacity: 0.8;">CARD HOLDER</div>
@@ -400,7 +413,7 @@ function showAddFundsModal() {
                     </div>
                     <div class="card-expiry">
                         <div style="font-size: 10px; opacity: 0.8;">EXPIRES</div>
-                        <div>12/25</div>
+                        <div>12/26</div>
                     </div>
                 </div>
             </div>
@@ -458,7 +471,20 @@ function confirmDeleteAccount() {
         <div class="modal-content" style="border: 3px solid #ef4444;">
             <h2 style="color: #ef4444;">⚠️ Delete Account</h2>
             <p style="color: var(--text-secondary); margin: 20px 0;">
-                Are you sure? This cannot be undone!
+                Are you sure?
+                <br>All your data will be permanently deleted.<br>
+            </p>
+            <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 10px;">
+                This includes:
+            </p>
+            <ul style="text-align: left; margin-left: 40px; color: var(--text-secondary); margin-bottom: 20px;">
+                <li>Your balance: <span style="color: #ef4444;"><strong>${currentUser.balance}$</strong></span></li>
+                <li>Your XP and rank: <span style="color: #ef4444;"><strong>${currentUser.xp} XP (${Ranking.getRank(currentUser.xp).name})</strong></span></li>
+                <li>Your shop points: <span style="color: #ef4444;"><strong>${JSON.stringify(currentUser.shopPoints)}</strong></span></li>
+                <li>Any other associated data</li>
+            </ul>
+            <p style="font-size: 14px; color: var(--text-tertiary);">
+                This action is irreversible. Please confirm if you want to proceed.
             </p>
             <div class="modal-buttons">
                 <button class="modal-btn" style="background: #ef4444; color: white;" onclick="deleteAccount()">Yes, Delete</button>
@@ -530,9 +556,9 @@ async function updateGameStats(game, won, betAmount, winAmount) {
         await API.updateGameStats(game, won, betAmount, winAmount);
 
         if (won) {
-            const baseXP = Math.floor(betAmount / 10);
+            const baseXP = Math.floor(betAmount / 50);
             const winMultiplier = winAmount / betAmount;
-            const bonusXP = winMultiplier > 2 ? Math.floor(baseXP * 0.5) : 0;
+            const bonusXP = winMultiplier > 3 ? Math.floor(baseXP * 0.5) : 0;
             const totalXP = baseXP + bonusXP;
 
             const oldRank = Ranking.getRank(currentUser.xp);

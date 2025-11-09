@@ -16,8 +16,10 @@ const Ranking = {
         { name: 'Master', emoji: '🎖️', minXP: 15000, shopPoints: 1750 },
         { name: 'Grandmaster', emoji: '👑', minXP: 25000, shopPoints: 3000 },
         { name: 'Legend', emoji: '🌟', minXP: 50000, shopPoints: 5000 },
-        { name: 'Immortal', emoji: '🔱', minXP: 100000, shopPoints: 10000 },
-        { name: 'Eternal', emoji: '🛡️', minXP: 150000, shopPoints: 20000 }
+        { name: 'Mythic', emoji: '🦄', minXP: 100000, shopPoints: 7500 },
+        { name: 'Immortal', emoji: '🔱', minXP: 150000, shopPoints: 10000 },
+        { name: 'Eternal', emoji: '🛡️', minXP: 250000, shopPoints: 20000 }
+
     ],
 
     /**
