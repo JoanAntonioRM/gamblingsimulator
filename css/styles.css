@@ -242,13 +242,13 @@ body {
 .stat-card {
     background: var(--card-bg);
     border-radius: 15px;
-    padding: 25px;
+    padding: 15px;
     text-align: center;
     box-shadow: 0 5px 15px var(--card-shadow);
 }
 
 .stat-value {
-    font-size: 32px;
+    font-size: 30px;
     font-weight: bold;
     color: #667eea;
     margin-bottom: 5px;
