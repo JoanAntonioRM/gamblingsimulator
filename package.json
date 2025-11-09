@@ -1,0 +1,17 @@
+{
+  "name": "casino-simulator",
+  "version": "1.0.0",
+  "description": "Casino Simulator - Full Stack on Vercel",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build needed'"
+  },
+  "dependencies": {
+    "pg": "^8.11.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

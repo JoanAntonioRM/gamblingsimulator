@@ -1,31 +1,28 @@
 /**
  * ranking.js - XP and Ranking System
- * Manages user levels, XP, and shop points
+ * XP is now awarded based on WINS, not bet amounts
  */
 
 const Ranking = {
     // Rank definitions
     RANKS: [
         { name: 'No Rank', emoji: '⚪', minXP: 0, shopPoints: 0 },
-        { name: 'Bronze', emoji: '🥉', minXP: 500, shopPoints: 50 },
-        { name: 'Silver', emoji: '🥈', minXP: 1000, shopPoints: 100 },
-        { name: 'Gold', emoji: '🥇', minXP: 1500, shopPoints: 200 },
-        { name: 'Platinum', emoji: '💎', minXP: 2500, shopPoints: 350 },
-        { name: 'Diamond', emoji: '💠', minXP: 5000, shopPoints: 500 },
-        { name: 'Ruby', emoji: '💜', minXP: 10000, shopPoints: 1000 },
-        { name: 'Master', emoji: '🎖️', minXP: 15000, shopPoints: 1750 },
-        { name: 'Grandmaster', emoji: '👑', minXP: 25000, shopPoints: 3000 },
-        { name: 'Legend', emoji: '🌟', minXP: 50000, shopPoints: 5000 },
-        { name: 'Mythic', emoji: '🦄', minXP: 100000, shopPoints: 7500 },
-        { name: 'Immortal', emoji: '🔱', minXP: 150000, shopPoints: 10000 },
-        { name: 'Eternal', emoji: '🛡️', minXP: 250000, shopPoints: 20000 }
-
+        { name: 'Bronze', emoji: '🥉', minXP: 50, shopPoints: 50 },
+        { name: 'Silver', emoji: '🥈', minXP: 100, shopPoints: 100 },
+        { name: 'Gold', emoji: '🥇', minXP: 200, shopPoints: 200 },
+        { name: 'Platinum', emoji: '💎', minXP: 350, shopPoints: 350 },
+        { name: 'Diamond', emoji: '💠', minXP: 600, shopPoints: 500 },
+        { name: 'Ruby', emoji: '💜', minXP: 1000, shopPoints: 1000 },
+        { name: 'Master', emoji: '🎖️', minXP: 1500, shopPoints: 1750 },
+        { name: 'Grandmaster', emoji: '👑', minXP: 2500, shopPoints: 3000 },
+        { name: 'Legend', emoji: '🌟', minXP: 4000, shopPoints: 5000 },
+        { name: 'Mythic', emoji: '🦄', minXP: 6000, shopPoints: 7500 },
+        { name: 'Immortal', emoji: '🔱', minXP: 9000, shopPoints: 10000 },
+        { name: 'Eternal', emoji: '🛡️', minXP: 15000, shopPoints: 20000 }
     ],
 
     /**
      * Get rank information for a given XP amount
-     * @param {number} xp - Current XP
-     * @returns {Object} Rank object with index
      */
     getRank(xp) {
         for (let i = this.RANKS.length - 1; i >= 0; i--) {
@@ -38,8 +35,6 @@ const Ranking = {
 
     /**
      * Get next rank information
-     * @param {number} currentRankIndex - Current rank index
-     * @returns {Object|null} Next rank object or null if max rank
      */
     getNextRank(currentRankIndex) {
         if (currentRankIndex < this.RANKS.length - 1) {
@@ -50,9 +45,6 @@ const Ranking = {
 
     /**
      * Calculate XP progress to next rank
-     * @param {number} xp - Current XP
-     * @param {number} rankIndex - Current rank index
-     * @returns {Object} Progress information
      */
     getXPProgress(xp, rankIndex) {
         const currentRank = this.RANKS[rankIndex];
@@ -83,20 +75,24 @@ const Ranking = {
 
     /**
      * Award XP for winning a game
-     * @param {Object} user - User object
-     * @param {number} betAmount - Amount that was bet
-     * @param {number} winAmount - Amount won
-     * @returns {Object} XP gained and rank up info
+     * NEW: XP is based on wins, not money
+     * Base XP: 10 XP per win
+     * Bonus XP: +5 XP if multiplier > 3x (big win)
+     * Bonus XP: +10 XP if multiplier > 10x (huge win)
      */
     awardXP(user, betAmount, winAmount) {
         const oldRank = this.getRank(user.xp);
         
-        // Calculate XP based on bet amount (1 XP per $50 bet)
+        // Calculate XP based on wins
+        let totalXP = 10; // Base XP for winning
+        
         // Bonus XP for big wins
-        const baseXP = Math.floor(betAmount / 50);
         const winMultiplier = winAmount / betAmount;
-        const bonusXP = winMultiplier > 3 ? Math.floor(baseXP * 0.5) : 0;
-        const totalXP = baseXP + bonusXP;
+        if (winMultiplier > 10) {
+            totalXP += 10; // Huge win bonus
+        } else if (winMultiplier > 3) {
+            totalXP += 5; // Big win bonus
+        }
 
         user.xp += totalXP;
 
@@ -118,8 +114,6 @@ const Ranking = {
 
     /**
      * Generate rank display HTML
-     * @param {Object} user - User object
-     * @returns {string} HTML string for rank display
      */
     getRankHTML(user) {
         const rank = this.getRank(user.xp);
@@ -142,8 +136,6 @@ const Ranking = {
 
     /**
      * Get rank display with username
-     * @param {Object} user - User object
-     * @returns {string} HTML string for user rank display
      */
     getUserRankHTML(user) {
         const rank = this.getRank(user.xp);
@@ -165,7 +157,6 @@ const Ranking = {
     }
 };
 
-// Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = Ranking;
 }

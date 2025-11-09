@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initializeApp() {
-    // Check if backend is available
     const isBackendUp = await API.healthCheck();
     
     if (!isBackendUp) {
@@ -15,7 +14,6 @@ async function initializeApp() {
         showBackendOfflineMessage();
     }
     
-    // Try to load user from token
     if (API.getToken()) {
         try {
             currentUser = await API.getProfile();
@@ -91,6 +89,9 @@ async function navigateTo(page) {
         case 'shop':
             loadShopPage(content);
             break;
+        case 'cases':
+            await loadCasesPage(content);
+            break;
         case 'crash':
         case 'dice':
         case 'blackjack':
@@ -132,6 +133,10 @@ function loadMainPage(content) {
                     <div class="game-icon">💎</div>
                     <div class="game-title">Mines</div>
                 </div>
+                <div class="game-card" onclick="navigateTo('cases')">
+                    <div class="game-icon">📦</div>
+                    <div class="game-title">Cases</div>
+                </div>
             </div>
         `;
     } else {
@@ -168,6 +173,10 @@ function loadMainPage(content) {
                     <div class="game-icon">💎</div>
                     <div class="game-title">Mines</div>
                 </div>
+                <div class="game-card" onclick="navigateTo('cases')">
+                    <div class="game-icon">📦</div>
+                    <div class="game-title">Cases</div>
+                </div>
             </div>
         `;
     }
@@ -185,11 +194,18 @@ function loadLoginPage(content) {
                 <label>Password</label>
                 <input type="password" id="authPassword" placeholder="Enter password">
             </div>
+            <div class="input-group hidden" id="emailGroup">
+                <label>Email (Optional - for password recovery)</label>
+                <input type="email" id="authEmail" placeholder="Enter email (optional)">
+            </div>
             <div class="error-message" id="authError"></div>
             <button class="btn-primary" onclick="handleAuth()">Continue</button>
             <div class="switch-mode">
                 <span id="switchText">Don't have an account? </span>
                 <a onclick="Auth.toggleMode()">Register</a>
+            </div>
+            <div class="switch-mode" id="forgotPasswordLink">
+                <a onclick="showForgotPassword()">Forgot Password?</a>
             </div>
         </div>
     `;
@@ -198,14 +214,14 @@ function loadLoginPage(content) {
 async function loadUserPage(content) {
     if (!currentUser) return;
     
-    // Refresh user data
     try {
         currentUser = await API.getProfile();
     } catch (error) {
         console.error('Failed to refresh user data:', error);
     }
     
-    const profit = currentUser.totalWon - currentUser.totalLost;
+    // FIXED: Use actualProfit from backend
+    const profit = currentUser.actualProfit || 0;
     
     content.innerHTML = `
         <button class="back-btn" onclick="navigateTo('main')">← Back</button>
@@ -219,9 +235,9 @@ async function loadUserPage(content) {
             </div>
             <div class="stat-card">
                 <div class="stat-value" style="color: ${profit >= 0 ? '#22c55e' : '#ef4444'}">
-                    $${Math.abs(profit).toFixed(0)}
+                    ${profit >= 0 ? '+' : ''}$${profit.toFixed(0)}
                 </div>
-                <div class="stat-label">${profit >= 0 ? 'Profit' : 'Loss'}</div>
+                <div class="stat-label">Net Profit</div>
             </div>
             ${Object.entries(currentUser.games).map(([game, stats]) => {
                 const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎' };
@@ -275,12 +291,6 @@ function loadShopPage(content) {
                     <div style="font-size: 60px; margin-bottom: 20px;">🔒</div>
                     <p style="font-size: 18px; color: var(--text-secondary);">
                         Create an account to start earning shop points!
-                    </p>
-                    <p style="font-size: 16px; color: var(--text-tertiary);">
-                        By creating an account, you can save your progress and earn rewards!
-                    </p>
-                    <p style="font-size: 16px; color: var(--text-tertiary);">
-                        Already have an account? <a href="#" onclick="navigateTo('login')">Login here</a>
                     </p>
                     <button class="btn-primary" style="max-width: 300px; margin: 20px auto;" onclick="navigateTo('login')">
                         Create Account / Login
@@ -381,11 +391,7 @@ function showGuestLimitModal() {
             <h2>🔒 Guest Account Limit</h2>
             <p style="color: var(--text-secondary); margin: 20px 0;">
                 As a guest, you have a limited balance of $1,000.<br><br>
-                Create an account to unlock unlimited features!<br>
-                By creating an account, you can save your progress and earn rewards.
-            </p>
-            <p style="font-size: 14px; color: var(--text-tertiary);">
-                You already have an account? <a href="#" onclick="this.closest('.modal').remove(); navigateTo('login');">Login here</a>
+                Create an account to unlock unlimited features!
             </p>
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-confirm" onclick="this.closest('.modal').remove(); navigateTo('login');">Create Account</button>
@@ -463,6 +469,98 @@ async function processAddFunds() {
     }
 }
 
+function showForgotPassword() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>Reset Password</h2>
+            <p style="color: var(--text-secondary); margin: 20px 0;">
+                Enter your username to receive password reset instructions.
+            </p>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="resetUsername" placeholder="Enter your username">
+            </div>
+            <div class="error-message" id="resetError"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" onclick="requestPasswordReset()">Request Reset</button>
+                <button class="modal-btn modal-btn-cancel" onclick="this.closest('.modal').remove();">Cancel</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+async function requestPasswordReset() {
+    const username = document.getElementById('resetUsername').value.trim();
+    const errorEl = document.getElementById('resetError');
+
+    if (!username) {
+        errorEl.textContent = 'Please enter your username';
+        return;
+    }
+
+    try {
+        const result = await API.forgotPassword(username);
+        document.querySelector('.modal').remove();
+        
+        // Show token input modal (in production, this would be sent via email)
+        showResetTokenModal(result.resetToken);
+    } catch (error) {
+        errorEl.textContent = error.message;
+    }
+}
+
+function showResetTokenModal(token) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>Enter New Password</h2>
+            <p style="color: var(--text-secondary); margin: 20px 0; font-size: 14px;">
+                Reset Token: <code style="background: #f3f4f6; padding: 5px; border-radius: 4px;">${token}</code>
+            </p>
+            <div class="input-group">
+                <label>Reset Token</label>
+                <input type="text" id="resetToken" value="${token}" readonly>
+            </div>
+            <div class="input-group">
+                <label>New Password</label>
+                <input type="password" id="newPassword" placeholder="Enter new password">
+            </div>
+            <div class="error-message" id="resetPassError"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" onclick="confirmPasswordReset()">Reset Password</button>
+                <button class="modal-btn modal-btn-cancel" onclick="this.closest('.modal').remove();">Cancel</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+async function confirmPasswordReset() {
+    const token = document.getElementById('resetToken').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const errorEl = document.getElementById('resetPassError');
+
+    if (!newPassword || newPassword.length < 6) {
+        errorEl.textContent = 'Password must be at least 6 characters';
+        return;
+    }
+
+    try {
+        await API.resetPassword(token, newPassword);
+        document.querySelector('.modal').remove();
+        alert('✅ Password reset successful! You can now login.');
+        navigateTo('login');
+    } catch (error) {
+        errorEl.textContent = error.message;
+    }
+}
+
 function confirmDeleteAccount() {
     const modal = document.createElement('div');
     modal.className = 'modal';
@@ -471,20 +569,7 @@ function confirmDeleteAccount() {
         <div class="modal-content" style="border: 3px solid #ef4444;">
             <h2 style="color: #ef4444;">⚠️ Delete Account</h2>
             <p style="color: var(--text-secondary); margin: 20px 0;">
-                Are you sure?
-                <br>All your data will be permanently deleted.<br>
-            </p>
-            <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 10px;">
-                This includes:
-            </p>
-            <ul style="text-align: left; margin-left: 40px; color: var(--text-secondary); margin-bottom: 20px;">
-                <li>Your balance: <span style="color: #ef4444;"><strong>${currentUser.balance}$</strong></span></li>
-                <li>Your XP and rank: <span style="color: #ef4444;"><strong>${currentUser.xp} XP (${Ranking.getRank(currentUser.xp).name})</strong></span></li>
-                <li>Your shop points: <span style="color: #ef4444;"><strong>${JSON.stringify(currentUser.shopPoints)}</strong></span></li>
-                <li>Any other associated data</li>
-            </ul>
-            <p style="font-size: 14px; color: var(--text-tertiary);">
-                This action is irreversible. Please confirm if you want to proceed.
+                Are you sure? All your data will be permanently deleted.
             </p>
             <div class="modal-buttons">
                 <button class="modal-btn" style="background: #ef4444; color: white;" onclick="deleteAccount()">Yes, Delete</button>
@@ -556,12 +641,14 @@ async function updateGameStats(game, won, betAmount, winAmount) {
         await API.updateGameStats(game, won, betAmount, winAmount);
 
         if (won) {
-            const baseXP = Math.floor(betAmount / 50);
-            const winMultiplier = winAmount / betAmount;
-            const bonusXP = winMultiplier > 3 ? Math.floor(baseXP * 0.5) : 0;
-            const totalXP = baseXP + bonusXP;
-
             const oldRank = Ranking.getRank(currentUser.xp);
+            const winMultiplier = winAmount / betAmount;
+            
+            // Award XP based on win
+            let totalXP = 10; // Base XP
+            if (winMultiplier > 10) totalXP += 10;
+            else if (winMultiplier > 3) totalXP += 5;
+
             currentUser.xp += totalXP;
             const newRank = Ranking.getRank(currentUser.xp);
 
@@ -574,7 +661,6 @@ async function updateGameStats(game, won, betAmount, winAmount) {
             }
         }
 
-        // Refresh user data
         currentUser = await API.getProfile();
         updateHeaderUI();
     } catch (error) {
@@ -651,5 +737,28 @@ function updateThemeUI(theme) {
     } else {
         themeIcon.textContent = '🌙';
         themeText.textContent = 'Dark Mode';
+    }
+}
+
+// NEW: Load cases page
+async function loadCasesPage(content) {
+    content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
+    
+    try {
+        const response = await fetch('games/cases.html');
+        const html = await response.text();
+        
+        const gameContainer = document.createElement('div');
+        gameContainer.innerHTML = html;
+        content.appendChild(gameContainer);
+        
+        const scripts = gameContainer.querySelectorAll('script');
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+        });
+    } catch (error) {
+        content.innerHTML += `<div class="game-container"><h1>Cases game coming soon!</h1></div>`;
     }
 }

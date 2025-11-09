@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Opening Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        .cases-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .cases-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .cases-header h1 {
+            font-size: 42px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .case-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .case-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .case-icon {
+            font-size: 80px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .case-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .case-price {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        /* Opening Animation */
+        .opening-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .opening-overlay.active {
+            display: flex;
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            height: 200px;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .spinner-window {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #fbbf24;
+            box-shadow: 0 0 20px #fbbf24;
+            transform: translateX(-1px);
+            z-index: 10;
+        }
+
+        .spinner-items {
+            display: flex;
+            position: absolute;
+            left: 0;
+            transition: left 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .spinner-item {
+            min-width: 150px;
+            height: 180px;
+            margin: 10px;
+            background: #1f2937;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border: 2px solid;
+        }
+
+        .spinner-item.blue { border-color: #3b82f6; }
+        .spinner-item.purple { border-color: #8b5cf6; }
+        .spinner-item.pink { border-color: #ec4899; }
+        .spinner-item.red { border-color: #ef4444; }
+        .spinner-item.gold { border-color: #fbbf24; }
+
+        .spinner-item-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .spinner-item-name {
+            font-size: 12px;
+            color: white;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .spinner-item-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .result-display {
+            text-align: center;
+            color: white;
+        }
+
+        .result-item {
+            background: #1f2937;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 400px;
+            border: 3px solid;
+        }
+
+        .result-item-icon {
+            font-size: 100px;
+            margin-bottom: 15px;
+        }
+
+        .result-item-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-item-value {
+            font-size: 32px;
+            color: #fbbf24;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .result-profit {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+
+        .result-profit.profit { color: #22c55e; }
+        .result-profit.loss { color: #ef4444; }
+
+        .close-btn {
+            background: #667eea;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .close-btn:hover {
+            background: #5568d3;
+        }
+
+        /* Case Details Modal */
+        .case-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 999;
+            display: none;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .case-modal.active {
+            display: block;
+        }
+
+        .case-modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-close {
+            font-size: 32px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .item-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid;
+        }
+
+        .item-card.blue { border-color: #3b82f6; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+        .item-card.purple { border-color: #8b5cf6; background: linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%); }
+        .item-card.pink { border-color: #ec4899; background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); }
+        .item-card.red { border-color: #ef4444; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); }
+        .item-card.gold { border-color: #fbbf24; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
+
+        .item-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .item-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .item-chance {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .open-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .open-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #4ade80;
+            color: white;
+        }
+
+        .open-btn:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .open-btn.multiple {
+            background: #667eea;
+        }
+
+        .open-btn.multiple:hover {
+            background: #5568d3;
+        }
+
+        @media (max-width: 768px) {
+            .cases-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .spinner-container {
+                width: 100%;
+            }
+
+            .spinner-item {
+                min-width: 120px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cases-container">
+        <div class="cases-header">
+            <h1>📦 Case Opening</h1>
+            <p style="color: #666; font-size: 18px;">Choose a case and try your luck!</p>
+        </div>
+
+        <div class="cases-grid" id="casesGrid"></div>
+    </div>
+
+    <!-- Case Details Modal -->
+    <div class="case-modal" id="caseModal">
+        <div class="case-modal-content">
+            <div class="modal-header">
+                <h2 id="modalCaseName">Case Name</h2>
+                <span class="modal-close" onclick="CasesGame.closeModal()">×</span>
+            </div>
+            <div class="items-grid" id="itemsGrid"></div>
+            <div class="open-controls">
+                <button class="open-btn" onclick="CasesGame.openCase(1)">Open 1 Case</button>
+                <button class="open-btn multiple" onclick="CasesGame.openCase(3)">Open 3 Cases</button>
+                <button class="open-btn multiple" onclick="CasesGame.openCase(5)">Open 5 Cases</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opening Animation Overlay -->
+    <div class="opening-overlay" id="openingOverlay">
+        <div class="spinner-container">
+            <div class="spinner-window"></div>
+            <div class="spinner-items" id="spinnerItems"></div>
+        </div>
+        <div class="result-display" id="resultDisplay"></div>
+    </div>
+
+    <script>
+        const CasesGame = {
+            selectedCase: null,
+            
+            cases: [
+                {
+                    id: 1,
+                    name: "Beginner Case",
+                    icon: "📦",
+                    price: 100,
+                    items: [
+                        { name: "Basic Knife", icon: "🔪", value: 50, rarity: "blue", chance: 60 },
+                        { name: "Common Pistol", icon: "🔫", value: 75, rarity: "blue", chance: 60 },
+                        { name: "Standard Rifle", icon: "⚔️", value: 100, rarity: "purple", chance: 25 },
+                        { name: "Classic Gloves", icon: "🥊", value: 150, rarity: "purple", chance: 25 },
+                        { name: "Rare Skin", icon: "💎", value: 250, rarity: "pink", chance: 10 },
+                        { name: "Premium Blade", icon: "🗡️", value: 400, rarity: "red", chance: 4 },
+                        { name: "Legendary Knife", icon: "⚜️", value: 800, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "Weapon Case",
+                    icon: "🎯",
+                    price: 500,
+                    items: [
+                        { name: "Scout Rifle", icon: "🎯", value: 200, rarity: "blue", chance: 60 },
+                        { name: "Assault Rifle", icon: "🔫", value: 400, rarity: "blue", chance: 60 },
+                        { name: "Tactical SMG", icon: "⚔️", value: 600, rarity: "purple", chance: 25 },
+                        { name: "Sniper Elite", icon: "🎯", value: 900, rarity: "purple", chance: 25 },
+                        { name: "Gold AK", icon: "💛", value: 1500, rarity: "pink", chance: 10 },
+                        { name: "Dragon AWP", icon: "🐉", value: 2500, rarity: "red", chance: 4 },
+                        { name: "Fire Serpent", icon: "🔥", value: 5000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "Knife Collection",
+                    icon: "🗡️",
+                    price: 1000,
+                    items: [
+                        { name: "Gut Knife", icon: "🔪", value: 500, rarity: "blue", chance: 60 },
+                        { name: "Flip Knife", icon: "🗡️", value: 800, rarity: "blue", chance: 60 },
+                        { name: "Bayonet", icon: "⚔️", value: 1200, rarity: "purple", chance: 25 },
+                        { name: "Huntsman", icon: "🗡️", value: 1800, rarity: "purple", chance: 25 },
+                        { name: "Butterfly Knife", icon: "🦋", value: 3000, rarity: "pink", chance: 10 },
+                        { name: "Karambit", icon: "🌙", value: 5000, rarity: "red", chance: 4 },
+                        { name: "M9 Bayonet", icon: "⚜️", value: 10000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "Elite Case",
+                    icon: "💎",
+                    price: 2500,
+                    items: [
+                        { name: "StatTrak Pistol", icon: "🔫", value: 1000, rarity: "blue", chance: 60 },
+                        { name: "StatTrak Rifle", icon: "⚔️", value: 1800, rarity: "blue", chance: 60 },
+                        { name: "Factory New AK", icon: "✨", value: 3000, rarity: "purple", chance: 25 },
+                        { name: "Howl M4A4", icon: "🐺", value: 5000, rarity: "purple", chance: 25 },
+                        { name: "Dlore AWP", icon: "🦅", value: 8000, rarity: "pink", chance: 10 },
+                        { name: "Crimson Web", icon: "🕷️", value: 15000, rarity: "red", chance: 4 },
+                        { name: "Sapphire Doppler", icon: "💠", value: 30000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 5,
+                    name: "Glove Case",
+                    icon: "🥊",
+                    price: 3000,
+                    items: [
+                        { name: "Sport Gloves", icon: "🥊", value: 1500, rarity: "blue", chance: 60 },
+                        { name: "Driver Gloves", icon: "🏎️", value: 2000, rarity: "blue", chance: 60 },
+                        { name: "Hand Wraps", icon: "🤜", value: 3500, rarity: "purple", chance: 25 },
+                        { name: "Moto Gloves", icon: "🏍️", value: 5000, rarity: "purple", chance: 25 },
+                        { name: "Specialist Gloves", icon: "👊", value: 8000, rarity: "pink", chance: 10 },
+                        { name: "Pandora's Box", icon: "📦", value: 15000, rarity: "red", chance: 4 },
+                        { name: "Emerald Web", icon: "🕸️", value: 35000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 6,
+                    name: "Premium Case",
+                    icon: "👑",
+                    price: 5000,
+                    items: [
+                        { name: "Minimal Wear Knife", icon: "🗡️", value: 2500, rarity: "blue", chance: 60 },
+                        { name: "Factory New Glock", icon: "🔫", value: 3500, rarity: "blue", chance: 60 },
+                        { name: "Fade Knife", icon: "🌈", value: 6000, rarity: "purple", chance: 25 },
+                        { name: "Tiger Tooth", icon: "🐅", value: 9000, rarity: "purple", chance: 25 },
+                        { name: "Marble Fade", icon: "🎨", value: 15000, rarity: "pink", chance: 10 },
+                        { name: "Ruby Doppler", icon: "💎", value: 30000, rarity: "red", chance: 4 },
+                        { name: "Blue Gem", icon: "💠", value: 60000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 7,
+                    name: "Legendary Case",
+                    icon: "⭐",
+                    price: 10000,
+                    items: [
+                        { name: "Rare Pattern", icon: "🎨", value: 5000, rarity: "blue", chance: 60 },
+                        { name: "Limited Edition", icon: "🏆", value: 8000, rarity: "blue", chance: 60 },
+                        { name: "Collectors Item", icon: "💎", value: 12000, rarity: "purple", chance: 25 },
+                        { name: "Signed Skin", icon: "✍️", value: 18000, rarity: "purple", chance: 25 },
+                        { name: "Championship", icon: "🏅", value: 30000, rarity: "pink", chance: 10 },
+                        { name: "Tournament Drop", icon: "🎪", value: 60000, rarity: "red", chance: 4 },
+                        { name: "One of a Kind", icon: "👑", value: 120000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 8,
+                    name: "Souvenir Case",
+                    icon: "🎁",
+                    price: 15000,
+                    items: [
+                        { name: "Souvenir Pistol", icon: "🔫", value: 7500, rarity: "blue", chance: 60 },
+                        { name: "Souvenir Rifle", icon: "⚔️", value: 12000, rarity: "blue", chance: 60 },
+                        { name: "Major Skin", icon: "🏆", value: 18000, rarity: "purple", chance: 25 },
+                        { name: "Finals Drop", icon: "🎊", value: 28000, rarity: "purple", chance: 25 },
+                        { name: "Gold Sticker", icon: "⭐", value: 45000, rarity: "pink", chance: 10 },
+                        { name: "Championship 2024", icon: "🏅", value: 90000, rarity: "red", chance: 4 },
+                        { name: "Grand Final MVP", icon: "👑", value: 180000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 9,
+                    name: "Exclusive Case",
+                    icon: "💰",
+                    price: 25000,
+                    items: [
+                        { name: "Exclusive Blade", icon: "🗡️", value: 12500, rarity: "blue", chance: 60 },
+                        { name: "VIP Weapon", icon: "🔫", value: 20000, rarity: "blue", chance: 60 },
+                        { name: "Platinum Skin", icon: "💿", value: 30000, rarity: "purple", chance: 25 },
+                        { name: "Diamond Edition", icon: "💎", value: 50000, rarity: "purple", chance: 25 },
+                        { name: "Royal Collection", icon: "👑", value: 80000, rarity: "pink", chance: 10 },
+                        { name: "Imperial Set", icon: "⚜️", value: 150000, rarity: "red", chance: 4 },
+                        { name: "Crown Jewel", icon: "💍", value: 300000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 10,
+                    name: "Ultimate Case",
+                    icon: "🔱",
+                    price: 50000,
+                    items: [
+                        { name: "Mythical Blade", icon: "⚔️", value: 25000, rarity: "blue", chance: 60 },
+                        { name: "Ancient Weapon", icon: "🏺", value: 40000, rarity: "blue", chance: 60 },
+                        { name: "Legendary Artifact", icon: "🗿", value: 60000, rarity: "purple", chance: 25 },
+                        { name: "Divine Relic", icon: "✨", value: 100000, rarity: "purple", chance: 25 },
+                        { name: "Celestial Item", icon: "🌟", value: 160000, rarity: "pink", chance: 10 },
+                        { name: "God Tier", icon: "⚡", value: 300000, rarity: "red", chance: 4 },
+                        { name: "Infinity Edge", icon: "♾️", value: 600000, rarity: "gold", chance: 1 }
+                    ]
+                }
+            ],
+
+            init() {
+                this.renderCases();
+            },
+
+            renderCases() {
+                const grid = document.getElementById('casesGrid');
+                grid.innerHTML = this.cases.map(c => `
+                    <div class="case-card" onclick="CasesGame.showCaseDetails(${c.id})">
+                        <div class="case-icon">${c.icon}</div>
+                        <div class="case-name">${c.name}</div>
+                        <div class="case-price">$${c.price.toLocaleString()}</div>
+                    </div>
+                `).join('');
+            },
+
+            showCaseDetails(caseId) {
+                this.selectedCase = this.cases.find(c => c.id === caseId);
+                if (!this.selectedCase) return;
+
+                document.getElementById('modalCaseName').textContent = this.selectedCase.name;
+                
+                const itemsGrid = document.getElementById('itemsGrid');
+                itemsGrid.innerHTML = this.selectedCase.items.map(item => `
+                    <div class="item-card ${item.rarity}">
+                        <div class="item-icon">${item.icon}</div>
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-value">$${item.value.toLocaleString()}</div>
+                        <div class="item-chance">${item.chance}% chance</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('caseModal').classList.add('active');
+            },
+
+            closeModal() {
+                document.getElementById('caseModal').classList.remove('active');
+            },
+
+            openCase(count) {
+                const balance = getCurrentBalance();
+                const totalCost = this.selectedCase.price * count;
+
+                if (totalCost > balance) {
+                    alert('Insufficient balance!');
+                    return;
+                }
+
+                updateBalance(-totalCost);
+                this.closeModal();
+
+                // Open cases one by one
+                this.openSingleCase(count, 0, totalCost, []);
+            },
+
+            openSingleCase(totalCount, currentIndex, totalCost, allResults) {
+                if (currentIndex >= totalCount) {
+                    // All cases opened, show final results
+                    this.showFinalResults(allResults, totalCost);
+                    return;
+                }
+
+                // Get random item
+                const wonItem = this.getRandomItem();
+                allResults.push(wonItem);
+
+                // Show spinning animation
+                this.animateSpinner(wonItem, () => {
+                    setTimeout(() => {
+                        this.openSingleCase(totalCount, currentIndex + 1, totalCost, allResults);
+                    }, 1000);
+                });
+            },
+
+            getRandomItem() {
+                const items = this.selectedCase.items;
+                const totalWeight = items.reduce((sum, item) => sum + item.chance, 0);
+                let random = Math.random() * totalWeight;
+
+                for (let item of items) {
+                    if (random < item.chance) {
+                        return {...item};
+                    }
+                    random -= item.chance;
+                }
+
+                return {...items[0]};
+            },
+
+            animateSpinner(wonItem, callback) {
+                const overlay = document.getElementById('openingOverlay');
+                const spinnerItems = document.getElementById('spinnerItems');
+                const resultDisplay = document.getElementById('resultDisplay');
+
+                overlay.classList.add('active');
+                resultDisplay.innerHTML = '<h2 style="font-size: 28px; margin-bottom: 20px;">Opening Case...</h2>';
+
+                // Generate spinner items
+                const items = [];
+                for (let i = 0; i < 50; i++) {
+                    const randomItem = this.selectedCase.items[Math.floor(Math.random() * this.selectedCase.items.length)];
+                    items.push(randomItem);
+                }
+                
+                // Insert won item at specific position
+                const winPosition = 42;
+                items[winPosition] = wonItem;
+
+                spinnerItems.innerHTML = items.map(item => `
+                    <div class="spinner-item ${item.rarity}">
+                        <div class="spinner-item-icon">${item.icon}</div>
+                        <div class="spinner-item-name">${item.name}</div>
+                        <div class="spinner-item-value">$${item.value.toLocaleString()}</div>
+                    </div>
+                `).join('');
+
+                // Calculate spin distance
+                const itemWidth = 170;
+                const finalPosition = -(winPosition * itemWidth - window.innerWidth / 2 + itemWidth / 2);
+
+                setTimeout(() => {
+                    spinnerItems.style.left = finalPosition + 'px';
+                }, 100);
+
+                setTimeout(() => {
+                    this.showResult(wonItem);
+                    if (callback) callback();
+                }, 4500);
+            },
+
+            showResult(item) {
+                const resultDisplay = document.getElementById('resultDisplay');
+                
+                resultDisplay.innerHTML = `
+                    <div class="result-item ${item.rarity}">
+                        <div class="result-item-icon">${item.icon}</div>
+                        <div class="result-item-name">${item.name}</div>
+                        <div class="result-item-value">$${item.value.toLocaleString()}</div>
+                    </div>
+                `;
+            },
+
+            showFinalResults(results, totalCost) {
+                const totalWon = results.reduce((sum, item) => sum + item.value, 0);
+                const profit = totalWon - totalCost;
+
+                updateBalance(totalWon);
+
+                const resultDisplay = document.getElementById('resultDisplay');
+                
+                resultDisplay.innerHTML = `
+                    <h2 style="font-size: 32px; margin-bottom: 20px;">Case Opening Complete!</h2>
+                    <div style="font-size: 20px; margin-bottom: 15px;">
+                        Opened ${results.length} case${results.length > 1 ? 's' : ''}
+                    </div>
+                    <div style="font-size: 24px; margin-bottom: 10px;">
+                        Total Value: <span style="color: #fbbf24;">$${totalWon.toLocaleString()}</span>
+                    </div>
+                    <div class="result-profit ${profit >= 0 ? 'profit' : 'loss'}">
+                        ${profit >= 0 ? 'Profit' : 'Loss'}: ${profit >= 0 ? '+' : ''}$${Math.abs(profit).toLocaleString()}
+                    </div>
+                    <button class="close-btn" onclick="CasesGame.closeOverlay()">Close</button>
+                `;
+
+                // Update game stats for best item
+                if (currentUser && results.length > 0) {
+                    const bestItem = results.reduce((best, item) => item.value > best.value ? item : best);
+                    const won = bestItem.value > this.selectedCase.price;
+                    updateGameStats('cases', won, totalCost, totalWon);
+                }
+            },
+
+            closeOverlay() {
+                document.getElementById('openingOverlay').classList.remove('active');
+                const spinnerItems = document.getElementById('spinnerItems');
+                spinnerItems.style.transition = 'none';
+                spinnerItems.style.left = '0px';
+                setTimeout(() => {
+                    spinnerItems.style.transition = 'left 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+                }, 100);
+            }
+        };
+
+        if (typeof currentUser === 'undefined') {
+            let currentUser = null;
+        }
+
+        CasesGame.init();
+    </script>
+</body>
+</html>

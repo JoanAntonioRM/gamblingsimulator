@@ -1,28 +1,23 @@
 /**
- * api.js - Frontend API Client
- * Handles all communication with the backend server
+ * api.js - Frontend API Client with Password Reset
  */
 
 const API = {
-    // IMPORTANT: Change this to your Railway backend URL after deployment
-    BASE_URL: 'https://gamblingsimulator-production.up.railway.app/api',
+    // Update this to your backend URL
+    BASE_URL: '/api',
     
-    // Get auth token from localStorage
     getToken() {
         return localStorage.getItem('authToken');
     },
     
-    // Save auth token
     saveToken(token) {
         localStorage.setItem('authToken', token);
     },
     
-    // Clear auth token
     clearToken() {
         localStorage.removeItem('authToken');
     },
     
-    // Make authenticated request
     async request(endpoint, options = {}) {
         const token = this.getToken();
         const headers = {
@@ -55,10 +50,10 @@ const API = {
     
     // ========== AUTH ENDPOINTS ==========
     
-    async register(username, password) {
+    async register(username, password, email = null) {
         const data = await this.request('/auth/register', {
             method: 'POST',
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password, email })
         });
         
         if (data.token) {
@@ -79,6 +74,20 @@ const API = {
         }
         
         return data;
+    },
+    
+    async forgotPassword(username) {
+        return await this.request('/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ username })
+        });
+    },
+    
+    async resetPassword(resetToken, newPassword) {
+        return await this.request('/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ resetToken, newPassword })
+        });
     },
     
     logout() {
@@ -143,7 +152,6 @@ const API = {
     }
 };
 
-// Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = API;
 }

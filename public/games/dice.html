@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dice Game</title>
+    <title>Dice Game - Faster</title>
     <style>
         .dice-game-container {
             max-width: 800px;
@@ -426,7 +426,6 @@
                 const slider = document.getElementById('diceSlider');
                 let value = parseFloat(slider.value);
                 
-                // Enforce limits: 2% (98x) to 98% (1.01x)
                 if (value < 2) value = 2;
                 if (value > 98) value = 98;
                 slider.value = value;
@@ -517,6 +516,7 @@
                 document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = true);
                 document.getElementById('resultMarker').style.display = 'none';
 
+                // FASTER: Reduced from 1000ms total to 400ms
                 this.animateRoll(betAmount);
             },
 
@@ -531,11 +531,12 @@
                     `;
                     counter++;
 
-                    if (counter >= 20) {
+                    // FASTER: Reduced from 20 iterations to 8 iterations
+                    if (counter >= 8) {
                         clearInterval(animationInterval);
                         this.showResult(betAmount);
                     }
-                }, 50);
+                }, 50); // FASTER: Same 50ms interval but fewer iterations
             },
 
             showResult(betAmount) {
@@ -585,12 +586,13 @@
 
                 this.addToHistory(rolledNumber, won, profit);
 
+                // FASTER: Reduced from 2000ms to 800ms
                 setTimeout(() => {
                     this.isRolling = false;
                     document.getElementById('rollBtn').disabled = false;
                     document.getElementById('diceSlider').disabled = false;
                     document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = false);
-                }, 2000);
+                }, 800);
             },
 
             addToHistory(number, won, profitLoss) {
@@ -620,10 +622,8 @@
             let currentUser = null;
         }
         
-        // Initialize immediately and reinitialize when page becomes visible
         DiceGame.init();
         
-        // Reinitialize when navigating back to the page
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
                 setTimeout(() => DiceGame.updateSlider(), 100);
