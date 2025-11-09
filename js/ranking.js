@@ -7,12 +7,17 @@ const Ranking = {
     // Rank definitions
     RANKS: [
         { name: 'No Rank', emoji: '⚪', minXP: 0, shopPoints: 0 },
-        { name: 'Bronze', emoji: '🥉', minXP: 100, shopPoints: 50 },
-        { name: 'Silver', emoji: '🥈', minXP: 300, shopPoints: 100 },
-        { name: 'Gold', emoji: '🥇', minXP: 600, shopPoints: 200 },
-        { name: 'Platinum', emoji: '💎', minXP: 1000, shopPoints: 350 },
-        { name: 'Diamond', emoji: '💠', minXP: 1500, shopPoints: 500 },
-        { name: 'Ruby', emoji: '💜', minXP: 2500, shopPoints: 1000 }
+        { name: 'Bronze', emoji: '🥉', minXP: 500, shopPoints: 50 },
+        { name: 'Silver', emoji: '🥈', minXP: 1000, shopPoints: 100 },
+        { name: 'Gold', emoji: '🥇', minXP: 1500, shopPoints: 200 },
+        { name: 'Platinum', emoji: '💎', minXP: 2500, shopPoints: 350 },
+        { name: 'Diamond', emoji: '💠', minXP: 5000, shopPoints: 500 },
+        { name: 'Ruby', emoji: '💜', minXP: 10000, shopPoints: 1000 },
+        { name: 'Master', emoji: '🎖️', minXP: 15000, shopPoints: 1750 },
+        { name: 'Grandmaster', emoji: '👑', minXP: 25000, shopPoints: 3000 },
+        { name: 'Legend', emoji: '🌟', minXP: 50000, shopPoints: 5000 },
+        { name: 'Immortal', emoji: '🔱', minXP: 100000, shopPoints: 10000 },
+        { name: 'Eternal', emoji: '🛡️', minXP: 150000, shopPoints: 20000 }
     ],
 
     /**
@@ -84,11 +89,11 @@ const Ranking = {
     awardXP(user, betAmount, winAmount) {
         const oldRank = this.getRank(user.xp);
         
-        // Calculate XP based on bet amount (1 XP per $10 bet)
+        // Calculate XP based on bet amount (1 XP per $50 bet)
         // Bonus XP for big wins
-        const baseXP = Math.floor(betAmount / 10);
+        const baseXP = Math.floor(betAmount / 50);
         const winMultiplier = winAmount / betAmount;
-        const bonusXP = winMultiplier > 2 ? Math.floor(baseXP * 0.5) : 0;
+        const bonusXP = winMultiplier > 3 ? Math.floor(baseXP * 0.5) : 0;
         const totalXP = baseXP + bonusXP;
 
         user.xp += totalXP;

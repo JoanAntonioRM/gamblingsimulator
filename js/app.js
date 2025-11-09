@@ -1,8 +1,3 @@
-/**
- * app.js - Updated Main Application (Part 1 of 2)
- * Now uses backend API for all data operations
- */
-
 let currentUser = null;
 let guestBalance = 1000;
 let currentPage = 'main';
@@ -209,9 +204,9 @@ async function loadUserPage(content) {
     } catch (error) {
         console.error('Failed to refresh user data:', error);
     }
-    
-    const profit = currentUser.totalWon - currentUser.totalLost;
-    
+
+    const profit = currentUser.profit - currentUser.totalLost;
+
     content.innerHTML = `
         <button class="back-btn" onclick="navigateTo('main')">← Back</button>
         <div class="level-section">
