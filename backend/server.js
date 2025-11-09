@@ -16,11 +16,18 @@ const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
 
 // Middleware
+// Replace the current CORS configuration (around line 17) with:
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
-    credentials: true
+    origin: [
+        'https://gamblingsimulator.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:5500',
+        process.env.FRONTEND_URL
+    ].filter(Boolean),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
 
 // PostgreSQL Database setup
 const pool = new Pool({
