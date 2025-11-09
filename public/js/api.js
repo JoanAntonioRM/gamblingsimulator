@@ -4,7 +4,7 @@
 
 const API = {
     // Update this to your backend URL
-    BASE_URL: 'https://kgq8tadiy2.execute-api.us-east-2.amazonaws.com',
+    BASE_URL: 'https://bd7xwdime6.execute-api.us-east-2.amazonaws.com',
     
     getToken() {
         return localStorage.getItem('authToken');
