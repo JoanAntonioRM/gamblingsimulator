@@ -240,7 +240,7 @@ async function loadUserPage(content) {
                 <div class="stat-label">Net Profit</div>
             </div>
             ${Object.entries(currentUser.games).map(([game, stats]) => {
-                const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎' };
+                const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎', cases: '📦' };
                 return `
                     <div class="stat-card">
                         <div class="stat-value">${stats.played}</div>
