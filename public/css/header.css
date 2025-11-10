@@ -1,6 +1,6 @@
 /* Header */
 .header {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--card-bg);
     padding: 15px 30px;
     display: flex;
     justify-content: space-between;
@@ -30,7 +30,7 @@
 }
 
 .balance-display {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-theme);
     color: white;
     padding: 10px 25px;
     border-radius: 25px;
@@ -49,14 +49,14 @@
 }
 
 .user-section:hover {
-    background: #f3f4f6;
+    background: var(--card-shadow);
 }
 
 .user-icon {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-theme);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -66,7 +66,7 @@
 
 .username {
     font-weight: bold;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .logout-btn {
@@ -131,7 +131,7 @@
     top: 0;
     width: 280px;
     height: 100vh;
-    background: white;
+    background: var(--card-bg);
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
     transition: left 0.3s ease;
     z-index: 150;
@@ -148,7 +148,7 @@
     align-items: center;
     padding: 20px;
     border-bottom: 2px solid #e5e7eb;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-theme);
     color: white;
 }
 
@@ -194,12 +194,12 @@
     padding: 15px 20px;
     cursor: pointer;
     transition: all 0.3s;
-    color: #333;
+    color: var(--text-primary);
     font-weight: 500;
 }
 
 .menu-item:hover {
-    background: #f3f4f6;
+    background: var(--card-shadow);
     padding-left: 25px;
 }
 
@@ -209,7 +209,7 @@
 
 .menu-divider {
     height: 1px;
-    background: #e5e7eb;
+    background: var(--text-primary);
     margin: 10px 20px;
 }
 

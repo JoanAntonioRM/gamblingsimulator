@@ -7,8 +7,9 @@
 
 /* Theme Variables */
 :root[data-theme="light"] {
-    --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-primary: linear-gradient(135deg, #6694ea 0%, #3d31e0 100%);
     --bg-secondary: rgb(224, 224, 224);
+    --bg-theme: linear-gradient(135deg, #625fff 0%, #316ee0 100%);
     --text-primary: #333;
     --text-secondary: #666;
     --text-tertiary: #999;
@@ -21,6 +22,7 @@
 :root[data-theme="dark"] {
     --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     --bg-secondary: #0f3460;
+    --bg-theme: linear-gradient(135deg, #625fff 0%, #316ee0 100%);
     --text-primary: #e5e7eb;
     --text-secondary: #d1d5db;
     --text-tertiary: #9ca3af;
@@ -60,7 +62,7 @@ body {
 .btn-primary {
     width: 100%;
     padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-theme);
     color: white;
     border: none;
     border-radius: 8px;
@@ -126,7 +128,7 @@ body {
 
 .xp-bar {
     height: 100%;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-theme);
     transition: width 0.3s;
     display: flex;
     align-items: center;
@@ -510,7 +512,7 @@ body {
 
 /* Credit Card Style */
 .credit-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-theme);
     border-radius: 15px;
     padding: 25px;
     margin: 25px 0;

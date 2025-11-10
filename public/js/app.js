@@ -541,7 +541,7 @@ function showAddFundsModal() {
         <div class="modal-content">
             <h2>💳 Add Funds</h2>
             
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
                 <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Your Rank: ${rank.emoji} ${rank.name}</div>
                 <div style="font-size: 18px; font-weight: bold;">
                     Max Deposit: ${maxDeposit === Infinity ? 'Unlimited' : '$' + maxDeposit.toLocaleString()}

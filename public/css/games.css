@@ -5,7 +5,7 @@
 
 /* Game Container */
 .game-container {
-    background: white;
+    background: var(--card-bg);
     border-radius: 20px;
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -14,7 +14,7 @@
 .game-container h1 {
     text-align: center;
     margin-bottom: 30px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 /* Crash Game Styles */
