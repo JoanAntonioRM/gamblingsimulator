@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings</title>
+    <style>
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .settings-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px var(--card-shadow);
+        }
+
+        .settings-section h2 {
+            color: var(--text-primary);
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-section-icon {
+            font-size: 28px;
+        }
+
+        .settings-form-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .settings-form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: border-color 0.3s;
+        }
+
+        .settings-form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .settings-form-group small {
+            display: block;
+            margin-top: 5px;
+            color: var(--text-tertiary);
+            font-size: 12px;
+        }
+
+        .settings-btn {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .settings-btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .settings-btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .settings-btn-danger {
+            background: #ef4444;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .settings-btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            color: #22c55e;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .current-value {
+            background: var(--bg-secondary);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .current-value-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 5px;
+        }
+
+        .current-value-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <!-- Username Section -->
+        <div class="settings-section">
+            <h2>
+                <span class="settings-section-icon">👤</span>
+                Change Username
+            </h2>
+            <div class="current-value">
+                <div class="current-value-label">Current Username</div>
+                <div class="current-value-text" id="currentUsername">Loading...</div>
+            </div>
+            <div class="settings-form-group">
+                <label>New Username</label>
+                <input type="text" id="newUsername" placeholder="Enter new username">
+                <small>3-20 characters, letters, numbers, and underscores only</small>
+            </div>
+            <div class="settings-form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="usernamePassword" placeholder="Enter your password">
+            </div>
+            <div class="error-message" id="usernameError"></div>
+            <div class="success-message" id="usernameSuccess"></div>
+            <button class="settings-btn settings-btn-primary" onclick="SettingsManager.changeUsername()">
+                Update Username
+            </button>
+        </div>
+
+        <!-- Password Section -->
+        <div class="settings-section">
+            <h2>
+                <span class="settings-section-icon">🔒</span>
+                Change Password
+            </h2>
+            <div class="settings-form-group">
+                <label>Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password">
+            </div>
+            <div class="settings-form-group">
+                <label>New Password</label>
+                <input type="password" id="newPassword" placeholder="Enter new password">
+                <small>Minimum 6 characters</small>
+            </div>
+            <div class="settings-form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmNewPassword" placeholder="Confirm new password">
+            </div>
+            <div class="error-message" id="passwordError"></div>
+            <div class="success-message" id="passwordSuccess"></div>
+            <button class="settings-btn settings-btn-primary" onclick="SettingsManager.changePassword()">
+                Update Password
+            </button>
+        </div>
+
+        <!-- Email Section -->
+        <div class="settings-section">
+            <h2>
+                <span class="settings-section-icon">📧</span>
+                Email Address
+            </h2>
+            <div class="current-value">
+                <div class="current-value-label">Current Email</div>
+                <div class="current-value-text" id="currentEmail">Not set</div>
+            </div>
+            <div class="settings-form-group">
+                <label>New Email</label>
+                <input type="email" id="newEmail" placeholder="Enter email address">
+                <small>Used for password recovery and important notifications</small>
+            </div>
+            <div class="settings-form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="emailPassword" placeholder="Enter your password">
+            </div>
+            <div class="error-message" id="emailError"></div>
+            <div class="success-message" id="emailSuccess"></div>
+            <button class="settings-btn settings-btn-primary" onclick="SettingsManager.changeEmail()">
+                Update Email
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const SettingsManager = {
+            user: null,
+
+            async init() {
+                try {
+                    this.user = await API.getProfile();
+                    document.getElementById('currentUsername').textContent = this.user.username;
+                    document.getElementById('currentEmail').textContent = this.user.email || 'Not set';
+                } catch (error) {
+                    console.error('Failed to load user:', error);
+                }
+            },
+
+            clearMessages(section) {
+                document.getElementById(`${section}Error`).textContent = '';
+                document.getElementById(`${section}Success`).textContent = '';
+            },
+
+            async changeUsername() {
+                this.clearMessages('username');
+                
+                const newUsername = document.getElementById('newUsername').value.trim();
+                const password = document.getElementById('usernamePassword').value;
+                const errorEl = document.getElementById('usernameError');
+                const successEl = document.getElementById('usernameSuccess');
+
+                if (!newUsername) {
+                    errorEl.textContent = 'Please enter a new username';
+                    return;
+                }
+
+                if (newUsername.length < 3 || newUsername.length > 20) {
+                    errorEl.textContent = 'Username must be 3-20 characters';
+                    return;
+                }
+
+                if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
+                    errorEl.textContent = 'Username can only contain letters, numbers, and underscores';
+                    return;
+                }
+
+                if (!password) {
+                    errorEl.textContent = 'Please enter your password';
+                    return;
+                }
+
+                try {
+                    await API.request('/user/change-username', {
+                        method: 'POST',
+                        body: JSON.stringify({ newUsername, password })
+                    });
+
+                    successEl.textContent = 'Username updated successfully!';
+                    document.getElementById('currentUsername').textContent = newUsername;
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('usernamePassword').value = '';
+
+                    // Update header
+                    if (typeof currentUser !== 'undefined') {
+                        currentUser.username = newUsername;
+                        updateHeaderUI();
+                    }
+                } catch (error) {
+                    errorEl.textContent = error.message;
+                }
+            },
+
+            async changePassword() {
+                this.clearMessages('password');
+                
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmNewPassword').value;
+                const errorEl = document.getElementById('passwordError');
+                const successEl = document.getElementById('passwordSuccess');
+
+                if (!currentPassword) {
+                    errorEl.textContent = 'Please enter your current password';
+                    return;
+                }
+
+                if (!newPassword || newPassword.length < 6) {
+                    errorEl.textContent = 'New password must be at least 6 characters';
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    errorEl.textContent = 'Passwords do not match';
+                    return;
+                }
+
+                try {
+                    await API.request('/user/change-password', {
+                        method: 'POST',
+                        body: JSON.stringify({ currentPassword, newPassword })
+                    });
+
+                    successEl.textContent = 'Password updated successfully!';
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                } catch (error) {
+                    errorEl.textContent = error.message;
+                }
+            },
+
+            async changeEmail() {
+                this.clearMessages('email');
+                
+                const newEmail = document.getElementById('newEmail').value.trim();
+                const password = document.getElementById('emailPassword').value;
+                const errorEl = document.getElementById('emailError');
+                const successEl = document.getElementById('emailSuccess');
+
+                if (!newEmail) {
+                    errorEl.textContent = 'Please enter an email address';
+                    return;
+                }
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(newEmail)) {
+                    errorEl.textContent = 'Please enter a valid email address';
+                    return;
+                }
+
+                if (!password) {
+                    errorEl.textContent = 'Please enter your password';
+                    return;
+                }
+
+                try {
+                    await API.request('/user/change-email', {
+                        method: 'POST',
+                        body: JSON.stringify({ newEmail, password })
+                    });
+
+                    successEl.textContent = 'Email updated successfully!';
+                    document.getElementById('currentEmail').textContent = newEmail;
+                    document.getElementById('newEmail').value = '';
+                    document.getElementById('emailPassword').value = '';
+                } catch (error) {
+                    errorEl.textContent = error.message;
+                }
+            }
+        };
+
+        if (typeof currentUser === 'undefined') {
+            let currentUser = null;
+        }
+        
+        SettingsManager.init();
+    </script>
+</body>
+</html>

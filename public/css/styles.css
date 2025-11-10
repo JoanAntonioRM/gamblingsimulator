@@ -121,6 +121,7 @@ body {
     border-radius: 15px;
     margin: 20px auto;
     overflow: hidden;
+    position: relative;
 }
 
 .xp-bar {
@@ -132,6 +133,22 @@ body {
     justify-content: center;
     color: white;
     font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.xp-bar-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 10;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
 }
 
 /* Games Grid */
@@ -259,12 +276,46 @@ body {
     font-size: 14px;
 }
 
+.stat-details {
+    font-size: 12px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+}
+
 /* Leaderboard */
 .leaderboard-container {
     background: var(--card-bg);
     border-radius: 20px;
     padding: 30px;
     box-shadow: 0 10px 30px var(--card-shadow);
+}
+
+.stat-detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-detail-label {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.stat-detail-value {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.stat-detail-value.positive {
+    color: #22c55e;
+}
+
+.stat-detail-value.negative {
+    color: #ef4444;
 }
 
 .game-tabs {

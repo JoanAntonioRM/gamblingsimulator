@@ -60,25 +60,27 @@
             margin-top: 20px;
             flex-wrap: nowrap;
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
         }
 
         .multiplier-slot {
             flex: 1;
-            padding: 10px 5px;
+            padding: 12px 5px;
             border-radius: 8px 8px 0 0;
             font-weight: bold;
             text-align: center;
             color: white;
             font-size: 14px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            min-width: 40px;
         }
 
         .multiplier-slot.active {
             background: #fbbf24 !important;
-            transform: scale(1.1);
+            transform: scale(1.15);
             z-index: 10;
+            border-color: #fbbf24;
         }
 
         .multiplier-low { background: #22c55e; }
@@ -89,11 +91,11 @@
             position: absolute;
             width: 16px;
             height: 16px;
-            background: #fbbf24;
+            background: radial-gradient(circle at 30% 30%, #fbbf24, #f59e0b);
             border-radius: 50%;
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);
+            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.6);
             z-index: 100;
-            display: none;
+            transition: all 0.05s ease-out;
         }
 
         .plinko-controls {
@@ -101,6 +103,44 @@
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .balls-slider-container {
+            margin-bottom: 25px;
+        }
+
+        .balls-slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .balls-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e5e7eb;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .balls-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .balls-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
         }
 
         .risk-selector {
@@ -364,6 +404,16 @@
             <div class="result-amount" id="resultAmount">$0.00</div>
         </div>
     </div>
+    <div class="balls-slider-container">
+        <div class="balls-slider-label">
+            <span class="control-label">Number of Balls</span>
+            <span id="ballsCount" style="font-weight: bold; color: #667eea;">1</span>
+        </div>
+        <input type="range" class="balls-slider" id="ballsSlider" min="1" max="100" value="1">
+        <small style="color: var(--text-tertiary); display: block; margin-top: 5px;">
+            Bet per ball: <span id="betPerBall">$0.00</span> | Total: <span id="totalBet">$0.00</span>
+        </small>
+    </div>
 
     <script>
         const PlinkoGame = {
@@ -371,6 +421,9 @@
             risk: 'low',
             lastBet: 0,
             isDropping: false,
+            activeBalls: [],
+            ballCount: 1,
+            results: [],
 
             multipliers: {
                 low: {
@@ -410,6 +463,23 @@
 
             init() {
                 this.renderBoard();
+                this.setupBallsSlider();
+            },
+
+            setupBallsSlider() {
+                const slider = document.getElementById('ballsSlider');
+                const ballsCount = document.getElementById('ballsCount');
+                const betInput = document.getElementById('betAmount');
+                
+                slider.addEventListener('input', () => {
+                    this.ballCount = parseInt(slider.value);
+                    ballsCount.textContent = this.ballCount;
+                    this.updateBetDisplay();
+                });
+
+                betInput.addEventListener('input', () => {
+                    this.updateBetDisplay();
+                });
             },
 
             setRows(rows) {
@@ -485,11 +555,12 @@
                 }
             },
 
-            drop() {
+            async drop() {
                 if (this.isDropping) return;
 
                 let betAmount = parseFloat(document.getElementById('betAmount').value);
                 const balance = getCurrentBalance();
+                const totalBet = betAmount * this.ballCount;
 
                 if (!betAmount || betAmount <= 0) {
                     alert('Please enter a valid bet amount!');
@@ -499,23 +570,54 @@
                 betAmount = Math.floor(betAmount * 100) / 100;
                 const roundedBalance = Math.floor(balance * 100) / 100;
 
-                if (betAmount > roundedBalance) {
+                if (totalBet > roundedBalance) {
                     alert('Insufficient balance!');
                     return;
                 }
 
                 this.lastBet = betAmount;
                 this.isDropping = true;
-                updateBalance(-betAmount);
+                this.results = [];
+                updateBalance(-totalBet);
 
                 document.getElementById('dropBtn').disabled = true;
                 document.getElementById('betAmount').disabled = true;
                 document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = true);
                 document.querySelectorAll('.risk-btn').forEach(btn => btn.disabled = true);
                 document.querySelectorAll('.row-btn').forEach(btn => btn.disabled = true);
+                document.getElementById('ballsSlider').disabled = true;
                 document.getElementById('resultDisplay').style.display = 'none';
 
-                this.animateDrop(betAmount);
+                // Drop balls with small delay between each
+                for (let i = 0; i < this.ballCount; i++) {
+                    await this.dropSingleBall(betAmount, i);
+                    await new Promise(resolve => setTimeout(resolve, 100)); // 100ms between drops
+                }
+
+                // Wait for all balls to finish
+                await this.waitForAllBalls();
+                this.showFinalResults(betAmount);
+            },
+
+            async dropSingleBall(betAmount, ballIndex) {
+                const ball = document.createElement('div');
+                ball.className = 'plinko-ball';
+                ball.id = 'ball-' + ballIndex;
+                document.getElementById('plinkoBoard').appendChild(ball);
+
+                const path = [];
+                let position = 0;
+
+                for (let i = 0; i < this.rows; i++) {
+                    const direction = Math.random() < 0.5 ? -1 : 1;
+                    position += direction;
+                    path.push(position);
+                }
+
+                ball.style.left = '50%';
+                ball.style.top = '20px';
+
+                this.animateBallFast(ball, path, betAmount);
             },
 
             animateDrop(betAmount) {
@@ -563,25 +665,66 @@
                 }, 150);
             },
 
-            showResult(slotIndex, betAmount) {
-                const multipliers = this.multipliers[this.risk][this.rows];
-                const multiplier = multipliers[slotIndex];
-                const winAmount = betAmount * multiplier;
-                const profit = winAmount - betAmount;
+            animateBallFast(ball, path, betAmount) {
+                let step = 0;
+                const dropInterval = setInterval(() => {
+                    if (step >= this.rows) {
+                        clearInterval(dropInterval);
+                        
+                        const position = path[path.length - 1];
+                        const slotIndex = Math.floor((position + this.rows) / 2);
+                        const actualSlot = Math.max(0, Math.min(slotIndex, this.rows));
+                        
+                        const multiplier = this.multipliers[this.risk][this.rows][actualSlot];
+                        this.results.push({ multiplier, betAmount });
 
-                updateBalance(winAmount);
+                        setTimeout(() => {
+                            ball.remove();
+                            const activeBallIndex = this.activeBalls.indexOf(ball);
+                            if (activeBallIndex > -1) {
+                                this.activeBalls.splice(activeBallIndex, 1);
+                            }
+                        }, 200);
+                    } else {
+                        const currentPosition = path[step];
+                        const xOffset = (currentPosition / this.rows) * 300;
+                        const yOffset = (step / this.rows) * 400;
+                        
+                        ball.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+                        step++;
+                    }
+                }, 40); // Faster: 40ms per step instead of 150ms
+
+                this.activeBalls.push(ball);
+            },
+
+            async waitForAllBalls() {
+                while (this.activeBalls.length > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            },
+
+            showFinalResults(betAmount) {
+                const totalWon = this.results.reduce((sum, r) => sum + (r.betAmount * r.multiplier), 0);
+                const totalBet = betAmount * this.ballCount;
+                const profit = totalWon - totalBet;
+
+                updateBalance(totalWon);
+
+                const avgMultiplier = (totalWon / totalBet).toFixed(2);
 
                 const resultDisplay = document.getElementById('resultDisplay');
                 const resultMultiplier = document.getElementById('resultMultiplier');
                 const resultAmount = document.getElementById('resultAmount');
 
-                resultMultiplier.textContent = multiplier + 'x';
+                resultMultiplier.textContent = avgMultiplier + 'x avg';
                 resultAmount.textContent = (profit >= 0 ? '+' : '') + '$' + profit.toFixed(2);
                 resultAmount.className = 'result-amount ' + (profit >= 0 ? 'win' : 'loss');
                 resultDisplay.style.display = 'block';
 
-                if (currentUser) {
-                    updateGameStats('plinko', profit > 0, betAmount, winAmount);
+                if (currentUser && this.results.length > 0) {
+                    const won = profit > 0;
+                    updateGameStats('plinko', won, totalBet, totalWon);
                 }
 
                 setTimeout(() => {
@@ -591,8 +734,9 @@
                     document.querySelectorAll('.quick-bet-btn').forEach(btn => btn.disabled = false);
                     document.querySelectorAll('.risk-btn').forEach(btn => btn.disabled = false);
                     document.querySelectorAll('.row-btn').forEach(btn => btn.disabled = false);
+                    document.getElementById('ballsSlider').disabled = false;
                 }, 1000);
-            }
+            },
         };
 
         if (typeof currentUser === 'undefined') {

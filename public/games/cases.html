@@ -587,89 +587,126 @@
 
                 if (totalCost > balance) {
                     alert('Insufficient balance!');
-                    return;
+                return;
                 }
 
                 updateBalance(-totalCost);
                 this.closeModal();
 
-                // Open cases one by one
-                this.openSingleCase(count, 0, totalCost, []);
-            },
-
-            openSingleCase(totalCount, currentIndex, totalCost, allResults) {
-                if (currentIndex >= totalCount) {
-                    // All cases opened, show final results
-                    this.showFinalResults(allResults, totalCost);
-                    return;
+                // Generate all results FIRST (fixes mismatch bug)
+                const allResults = [];
+                for (let i = 0; i < count; i++) {
+                    allResults.push(this.getRandomItem());
                 }
 
-                // Get random item
-                const wonItem = this.getRandomItem();
-                allResults.push(wonItem);
-
-                // Show spinning animation
-                this.animateSpinner(wonItem, () => {
-                    setTimeout(() => {
-                        this.openSingleCase(totalCount, currentIndex + 1, totalCost, allResults);
-                    }, 1000);
-                });
+                // Open all cases in parallel
+                this.openAllCasesParallel(count, allResults, totalCost);
             },
 
-            getRandomItem() {
-                const items = this.selectedCase.items;
-                const totalWeight = items.reduce((sum, item) => sum + item.chance, 0);
-                let random = Math.random() * totalWeight;
-
-                for (let item of items) {
-                    if (random < item.chance) {
-                        return {...item};
-                    }
-                    random -= item.chance;
-                }
-
-                return {...items[0]};
-            },
-
-            animateSpinner(wonItem, callback) {
+            openAllCasesParallel(count, allResults, totalCost) {
                 const overlay = document.getElementById('openingOverlay');
-                const spinnerItems = document.getElementById('spinnerItems');
-                const resultDisplay = document.getElementById('resultDisplay');
-
                 overlay.classList.add('active');
-                resultDisplay.innerHTML = '<h2 style="font-size: 28px; margin-bottom: 20px;">Opening Case...</h2>';
+
+                // Create container for multiple spinners
+                const spinnersContainer = document.createElement('div');
+                spinnersContainer.style.cssText = `
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                    width: 90%;
+                    max-width: 1200px;
+                    margin-bottom: 40px;
+                    max-height: 70vh;
+                    overflow-y: auto;
+                `;
+
+                document.getElementById('openingOverlay').insertBefore(
+                    spinnersContainer,
+                    document.getElementById('resultDisplay')
+                );
+
+                // Create a spinner for each case
+                for (let i = 0; i < count; i++) {
+                    const spinnerDiv = this.createSpinnerElement(allResults[i], i);
+                    spinnersContainer.appendChild(spinnerDiv);
+        
+                    // Start animation with slight delay for visual effect
+                    setTimeout(() => {
+                        this.animateSingleSpinner(spinnerDiv, allResults[i]);
+                    }, i * 100);
+                }
+
+                // Wait for all animations to complete
+                setTimeout(() => {
+                    spinnersContainer.remove();
+                    this.showParallelResults(allResults, totalCost);
+                }, 4500 + (count * 100));
+            },
+
+            createSpinnerElement(wonItem, index) {
+                const spinnerDiv = document.createElement('div');
+                spinnerDiv.style.cssText = `
+                    position: relative;
+                    width: 100%;
+                    height: 150px;
+                    overflow: hidden;
+                    background: rgba(0,0,0,0.3);
+                    border-radius: 12px;
+                `;
+
+                spinnerDiv.innerHTML = `
+                    <div style="position: absolute; left: 50%; top: 0; width: 2px; height: 100%; 
+                            background: #fbbf24; box-shadow: 0 0 20px #fbbf24; 
+                            transform: translateX(-1px); z-index: 10;"></div>
+                    <div class="spinner-items-${index}" style="display: flex; position: absolute; left: 0; 
+                                                                transition: left 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);"></div>
+                `;
 
                 // Generate spinner items
                 const items = [];
-                for (let i = 0; i < 50; i++) {
+                for (let j = 0; j < 50; j++) {
                     const randomItem = this.selectedCase.items[Math.floor(Math.random() * this.selectedCase.items.length)];
                     items.push(randomItem);
                 }
-                
+    
                 // Insert won item at specific position
                 const winPosition = 42;
                 items[winPosition] = wonItem;
 
+                const spinnerItems = spinnerDiv.querySelector(`.spinner-items-${index}`);
                 spinnerItems.innerHTML = items.map(item => `
-                    <div class="spinner-item ${item.rarity}">
-                        <div class="spinner-item-icon">${item.icon}</div>
-                        <div class="spinner-item-name">${item.name}</div>
-                        <div class="spinner-item-value">$${item.value.toLocaleString()}</div>
+                    <div style="min-width: 120px; height: 130px; margin: 10px; background: #1f2937; 
+                                border-radius: 10px; display: flex; flex-direction: column; align-items: center; 
+                                justify-content: center; padding: 10px; border: 2px solid ${this.getRarityColor(item.rarity)};">
+                        <div style="font-size: 48px; margin-bottom: 5px;">${item.icon}</div>
+                        <div style="font-size: 10px; color: white; text-align: center; margin-bottom: 3px;">${item.name}</div>
+                        <div style="font-size: 12px; font-weight: bold; color: #fbbf24;">$${item.value.toLocaleString()}</div>
                     </div>
                 `).join('');
 
-                // Calculate spin distance
-                const itemWidth = 170;
-                const finalPosition = -(winPosition * itemWidth - window.innerWidth / 2 + itemWidth / 2);
+                return spinnerDiv;
+            },
 
+            getRarityColor(rarity) {
+                const colors = {
+                    blue: '#3b82f6',
+                    purple: '#8b5cf6',
+                    pink: '#ec4899',
+                    red: '#ef4444',
+                    gold: '#fbbf24'
+                };
+                return colors[rarity] || '#3b82f6';
+            },
+
+            animateSingleSpinner(spinnerDiv, wonItem) {
+                const itemWidth = 140;
+                const winPosition = 42;
+                const finalPosition = -(winPosition * itemWidth - spinnerDiv.offsetWidth / 2 + itemWidth / 2);
+
+                const spinnerItems = spinnerDiv.querySelector('[class^="spinner-items"]');
                 setTimeout(() => {
                     spinnerItems.style.left = finalPosition + 'px';
                 }, 100);
-
-                setTimeout(() => {
-                    this.showResult(wonItem);
-                    if (callback) callback();
-                }, 4500);
             },
 
             showResult(item) {
@@ -684,20 +721,50 @@
                 `;
             },
 
-            showFinalResults(results, totalCost) {
+            showParallelResults(results, totalCost) {
                 const totalWon = results.reduce((sum, item) => sum + item.value, 0);
                 const profit = totalWon - totalCost;
 
                 updateBalance(totalWon);
 
                 const resultDisplay = document.getElementById('resultDisplay');
-                
-                resultDisplay.innerHTML = `
-                    <h2 style="font-size: 32px; margin-bottom: 20px;">Case Opening Complete!</h2>
-                    <div style="font-size: 20px; margin-bottom: 15px;">
-                        Opened ${results.length} case${results.length > 1 ? 's' : ''}
+    
+                // Group items by rarity for better display
+                const itemsByRarity = {};
+                results.forEach(item => {
+                    if (!itemsByRarity[item.rarity]) {
+                            itemsByRarity[item.rarity] = [];
+                    }
+                    itemsByRarity[item.rarity].push(item);
+                });
+
+                const itemsHTML = Object.entries(itemsByRarity).map(([rarity, items]) => `
+                    <div style="margin-bottom: 15px;">
+                        <h3 style="font-size: 14px; color: ${this.getRarityColor(rarity)}; margin-bottom: 10px;">
+                            ${rarity.toUpperCase()} (${items.length}x)
+                        </h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                            ${items.map(item => `
+                                <div style="background: #1f2937; border: 2px solid ${this.getRarityColor(item.rarity)}; 
+                                            border-radius: 8px; padding: 10px; text-align: center; min-width: 100px;">
+                                    <div style="font-size: 32px;">${item.icon}</div>
+                                    <div style="font-size: 11px; color: white; margin-top: 5px;">${item.name}</div>
+                                    <div style="font-size: 13px; font-weight: bold; color: #fbbf24; margin-top: 3px;">
+                                        $${item.value.toLocaleString()}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
-                    <div style="font-size: 24px; margin-bottom: 10px;">
+                `).join('');
+
+                resultDisplay.innerHTML = `
+                    <h2 style="font-size: 28px; margin-bottom: 15px; color: white;">Cases Opened: ${results.length}</h2>
+                    <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding: 15px; 
+                                background: rgba(0,0,0,0.3); border-radius: 12px;">
+                        ${itemsHTML}
+                    </div>
+                    <div style="font-size: 22px; margin-bottom: 10px; color: white;">
                         Total Value: <span style="color: #fbbf24;">$${totalWon.toLocaleString()}</span>
                     </div>
                     <div class="result-profit ${profit >= 0 ? 'profit' : 'loss'}">
@@ -706,12 +773,26 @@
                     <button class="close-btn" onclick="CasesGame.closeOverlay()">Close</button>
                 `;
 
-                // Update game stats for best item
+                // Update game stats
                 if (currentUser && results.length > 0) {
-                    const bestItem = results.reduce((best, item) => item.value > best.value ? item : best);
-                    const won = bestItem.value > this.selectedCase.price;
-                    updateGameStats('cases', won, totalCost, totalWon);
+                    // For cases, track profit as the "win" metric
+                    updateGameStats('cases', profit > 0, totalCost, totalWon);
                 }
+            },
+
+            getRandomItem() {
+                const items = this.selectedCase.items;
+                const totalWeight = items.reduce((sum, item) => sum + item.chance, 0);
+                let random = Math.random() * totalWeight;
+
+                for (let item of items) {
+                    if (random < item.chance) {
+                        return {...item}; // Return a COPY to avoid reference issues
+                    }
+                    random -= item.chance;
+                }
+
+                return {...items[0]};
             },
 
             closeOverlay() {

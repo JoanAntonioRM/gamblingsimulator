@@ -3,6 +3,13 @@ let guestBalance = 1000;
 let currentPage = 'main';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Add favicon
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    favicon.type = 'image/svg+xml';
+    favicon.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎰</text></svg>';
+    document.head.appendChild(favicon);
+    
     initializeApp();
 });
 
@@ -82,6 +89,16 @@ async function navigateTo(page) {
                 return;
             }
             await loadUserPage(content);
+            break;
+        case 'ranks':
+            await loadRanksPage(content);
+            break;
+        case 'settings':
+            if (!currentUser) {
+                navigateTo('login');
+                return;
+            }
+            await loadSettingsPage(content);
             break;
         case 'leaderboard':
             await loadLeaderboardPage(content);
@@ -220,7 +237,6 @@ async function loadUserPage(content) {
         console.error('Failed to refresh user data:', error);
     }
     
-    // FIXED: Use actualProfit from backend
     const profit = currentUser.actualProfit || 0;
     
     content.innerHTML = `
@@ -238,6 +254,16 @@ async function loadUserPage(content) {
                     ${profit >= 0 ? '+' : ''}$${profit.toFixed(0)}
                 </div>
                 <div class="stat-label">Net Profit</div>
+                <div class="stat-details">
+                    <div class="stat-detail-item">
+                        <div class="stat-detail-label">Won</div>
+                        <div class="stat-detail-value positive">+$${currentUser.totalWon.toFixed(0)}</div>
+                    </div>
+                    <div class="stat-detail-item">
+                        <div class="stat-detail-label">Lost</div>
+                        <div class="stat-detail-value negative">-$${currentUser.totalLost.toFixed(0)}</div>
+                    </div>
+                </div>
             </div>
             ${Object.entries(currentUser.games).map(([game, stats]) => {
                 const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎', cases: '📦' };
@@ -245,8 +271,15 @@ async function loadUserPage(content) {
                     <div class="stat-card">
                         <div class="stat-value">${stats.played}</div>
                         <div class="stat-label">${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)} Games</div>
-                        <div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">
-                            W: ${stats.won} / L: ${stats.lost}
+                        <div class="stat-details">
+                            <div class="stat-detail-item">
+                                <div class="stat-detail-label">W</div>
+                                <div class="stat-detail-value positive">${stats.won}</div>
+                            </div>
+                            <div class="stat-detail-item">
+                                <div class="stat-detail-label">L</div>
+                                <div class="stat-detail-value negative">${stats.lost}</div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -258,6 +291,84 @@ async function loadUserPage(content) {
             </button>
         </div>
     `;
+}
+
+Ranking.getUserRankHTML = function(user) {
+    const rank = this.getRank(user.xp);
+    const progress = this.getXPProgress(user.xp, rank.index);
+
+    return `
+        <div class="rank-badge">${rank.emoji}</div>
+        <div class="rank-name">${user.username}</div>
+        <div style="color: #666; margin-bottom: 10px;">${rank.name} - Level ${rank.index}</div>
+        <div class="xp-bar-container">
+            <div class="xp-bar" style="width: ${progress.percentage}%"></div>
+            <div class="xp-bar-text">
+                ${progress.current} / ${progress.isMaxRank ? 'MAX' : progress.max} XP
+            </div>
+        </div>
+        <div style="color: #667eea; font-weight: bold; margin-top: 10px;">
+            Shop Points: ${user.shopPoints}
+        </div>
+    `;
+};
+
+async function loadRanksPage(content) {
+    content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back</button>`;
+    
+    try {
+        const response = await fetch('ranks.html');
+        const html = await response.text();
+        
+        const ranksContainer = document.createElement('div');
+        ranksContainer.innerHTML = html;
+        content.appendChild(ranksContainer);
+        
+        const scripts = ranksContainer.querySelectorAll('script');
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+        });
+    } catch (error) {
+        content.innerHTML += `
+            <div class="game-container">
+                <h1>Ranks & XP System</h1>
+                <div style="text-align: center; color: var(--text-secondary); margin: 40px 0;">
+                    <p>Loading ranks information...</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+async function loadSettingsPage(content) {
+    content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back</button>`;
+    
+    try {
+        const response = await fetch('settings.html');
+        const html = await response.text();
+        
+        const settingsContainer = document.createElement('div');
+        settingsContainer.innerHTML = html;
+        content.appendChild(settingsContainer);
+        
+        const scripts = settingsContainer.querySelectorAll('script');
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+        });
+    } catch (error) {
+        content.innerHTML += `
+            <div class="game-container">
+                <h1>Settings</h1>
+                <div style="text-align: center; color: var(--text-secondary); margin: 40px 0;">
+                    <p>Loading settings...</p>
+                </div>
+            </div>
+        `;
+    }
 }
 
 function loadShopPage(content) {
@@ -302,8 +413,15 @@ function loadShopPage(content) {
 }
 
 async function loadLeaderboardPage(content) {
-    const games = ['crash', 'dice', 'blackjack', 'plinko', 'mines'];
-    const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎' };
+    const games = ['crash', 'dice', 'blackjack', 'plinko', 'mines', 'cases'];
+    const icons = { 
+        crash: '🚀', 
+        dice: '🎲', 
+        blackjack: '🃏', 
+        plinko: '🎯', 
+        mines: '💎',
+        cases: '📦'
+    };
     
     content.innerHTML = `
         <button class="back-btn" onclick="navigateTo('main')">← Back</button>
@@ -402,13 +520,34 @@ function showGuestLimitModal() {
     document.body.appendChild(modal);
 }
 
+let lastDepositTime = 0;
+let depositTotal = 0;
+const DEPOSIT_RESET_TIME = 3 * 60 * 1000; // 3 minutes
+const DEPOSIT_LIMIT_THRESHOLD = 50000;
+
 function showAddFundsModal() {
+    if (!currentUser) {
+        showGuestLimitModal();
+        return;
+    }
+
+    const rank = Ranking.getRank(currentUser.xp);
+    const maxDeposit = rank.maxDeposit;
+
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'block';
     modal.innerHTML = `
         <div class="modal-content">
-            <h2>Add Funds</h2>
+            <h2>💳 Add Funds</h2>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Your Rank: ${rank.emoji} ${rank.name}</div>
+                <div style="font-size: 18px; font-weight: bold;">
+                    Max Deposit: ${maxDeposit === Infinity ? 'Unlimited' : '$' + maxDeposit.toLocaleString()}
+                </div>
+            </div>
+
             <div class="credit-card">
                 <div class="card-chip"></div>
                 <div class="card-number">•••• •••• •••• 0247</div>
@@ -423,23 +562,95 @@ function showAddFundsModal() {
                     </div>
                 </div>
             </div>
+
             <div class="input-group">
                 <label>Amount to Add</label>
-                <input type="number" id="addFundsAmount" placeholder="Enter amount" min="1" step="100" style="text-align: center; font-size: 20px;">
+                <input type="number" id="addFundsAmount" placeholder="Enter amount" min="1" max="${maxDeposit}" step="100" style="text-align: center; font-size: 20px;">
+                <small style="color: var(--text-tertiary);">Maximum: $${maxDeposit === Infinity ? '∞' : maxDeposit.toLocaleString()}</small>
             </div>
+
+            <div id="cooldownWarning" style="display: none; background: #fef3c7; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px;">
+                ⏳ Cooldown active. Wait <span id="cooldownTimer"></span> before next deposit.
+            </div>
+
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-confirm" onclick="processAddFunds()">Confirm Payment</button>
                 <button class="modal-btn modal-btn-cancel" onclick="this.closest('.modal').remove();">Cancel</button>
             </div>
+
+            <div style="margin-top: 15px; text-align: center; font-size: 13px; color: var(--text-tertiary);">
+                💡 Rank up to increase your deposit limit!
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
+
+    // Check cooldown
+    checkDepositCooldown();
+}
+
+function checkDepositCooldown() {
+    const now = Date.now();
+    const timeSinceLastDeposit = now - lastDepositTime;
+
+    if (timeSinceLastDeposit > DEPOSIT_RESET_TIME) {
+        depositTotal = 0;
+    }
+
+    if (depositTotal >= DEPOSIT_LIMIT_THRESHOLD && timeSinceLastDeposit < DEPOSIT_RESET_TIME) {
+        const cooldownWarning = document.getElementById('cooldownWarning');
+        const cooldownTimer = document.getElementById('cooldownTimer');
+        const confirmBtn = document.querySelector('.modal-btn-confirm');
+
+        cooldownWarning.style.display = 'block';
+        confirmBtn.disabled = true;
+        confirmBtn.style.opacity = '0.5';
+
+        const timeRemaining = DEPOSIT_RESET_TIME - timeSinceLastDeposit;
+        updateCooldownTimer(timeRemaining);
+    }
+}
+
+function updateCooldownTimer(timeRemaining) {
+    const cooldownTimer = document.getElementById('cooldownTimer');
+    const minutes = Math.floor(timeRemaining / 60000);
+    const seconds = Math.floor((timeRemaining % 60000) / 1000);
+    cooldownTimer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    if (timeRemaining > 0) {
+        setTimeout(() => updateCooldownTimer(timeRemaining - 1000), 1000);
+    } else {
+        document.getElementById('cooldownWarning').style.display = 'none';
+        document.querySelector('.modal-btn-confirm').disabled = false;
+        document.querySelector('.modal-btn-confirm').style.opacity = '1';
+        depositTotal = 0;
+    }
 }
 
 async function processAddFunds() {
     const amount = parseFloat(document.getElementById('addFundsAmount').value);
+    const rank = Ranking.getRank(currentUser.xp);
+    const maxDeposit = rank.maxDeposit;
+
     if (isNaN(amount) || amount <= 0) {
         alert('Please enter a valid amount');
+        return;
+    }
+
+    if (amount > maxDeposit) {
+        alert(`Your rank (${rank.name}) allows a maximum deposit of $${maxDeposit.toLocaleString()}. Rank up to increase your limit!`);
+        return;
+    }
+
+    const now = Date.now();
+    const timeSinceLastDeposit = now - lastDepositTime;
+
+    if (timeSinceLastDeposit > DEPOSIT_RESET_TIME) {
+        depositTotal = 0;
+    }
+
+    if (depositTotal + amount > DEPOSIT_LIMIT_THRESHOLD && timeSinceLastDeposit < DEPOSIT_RESET_TIME) {
+        alert('You have reached the deposit limit. Please wait for the cooldown to end.');
         return;
     }
 
@@ -449,6 +660,9 @@ async function processAddFunds() {
         const result = await API.addFunds(amount);
         currentUser.balance = result.balance;
         updateHeaderUI();
+
+        lastDepositTime = now;
+        depositTotal += amount;
 
         const successModal = document.createElement('div');
         successModal.className = 'modal';
@@ -475,9 +689,9 @@ function showForgotPassword() {
     modal.style.display = 'block';
     modal.innerHTML = `
         <div class="modal-content">
-            <h2>Reset Password</h2>
+            <h2>🔐 Reset Password</h2>
             <p style="color: var(--text-secondary); margin: 20px 0;">
-                Enter your username to receive password reset instructions.
+                Enter your username. We'll send a 6-digit code to your registered email.
             </p>
             <div class="input-group">
                 <label>Username</label>
@@ -485,7 +699,7 @@ function showForgotPassword() {
             </div>
             <div class="error-message" id="resetError"></div>
             <div class="modal-buttons">
-                <button class="modal-btn modal-btn-confirm" onclick="requestPasswordReset()">Request Reset</button>
+                <button class="modal-btn modal-btn-confirm" onclick="requestPasswordReset()">Send Reset Code</button>
                 <button class="modal-btn modal-btn-cancel" onclick="this.closest('.modal').remove();">Cancel</button>
             </div>
         </div>
@@ -506,30 +720,35 @@ async function requestPasswordReset() {
         const result = await API.forgotPassword(username);
         document.querySelector('.modal').remove();
         
-        // Show token input modal (in production, this would be sent via email)
-        showResetTokenModal(result.resetToken);
+        // Show code input modal
+        showResetCodeModal(result.message);
     } catch (error) {
         errorEl.textContent = error.message;
     }
 }
 
-function showResetTokenModal(token) {
+function showResetCodeModal(message) {
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'block';
     modal.innerHTML = `
         <div class="modal-content">
-            <h2>Enter New Password</h2>
+            <h2>📧 Enter Reset Code</h2>
             <p style="color: var(--text-secondary); margin: 20px 0; font-size: 14px;">
-                Reset Token: <code style="background: #f3f4f6; padding: 5px; border-radius: 4px;">${token}</code>
+                ${message}
             </p>
             <div class="input-group">
-                <label>Reset Token</label>
-                <input type="text" id="resetToken" value="${token}" readonly>
+                <label>6-Digit Reset Code</label>
+                <input type="text" id="resetToken" placeholder="000000" maxlength="6" 
+                       style="font-size: 24px; text-align: center; letter-spacing: 5px;">
             </div>
             <div class="input-group">
                 <label>New Password</label>
                 <input type="password" id="newPassword" placeholder="Enter new password">
+            </div>
+            <div class="input-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm new password">
             </div>
             <div class="error-message" id="resetPassError"></div>
             <div class="modal-buttons">
@@ -542,20 +761,44 @@ function showResetTokenModal(token) {
 }
 
 async function confirmPasswordReset() {
-    const token = document.getElementById('resetToken').value;
+    const token = document.getElementById('resetToken').value.trim();
     const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
     const errorEl = document.getElementById('resetPassError');
+
+    if (!token || token.length !== 6) {
+        errorEl.textContent = 'Please enter the 6-digit code';
+        return;
+    }
 
     if (!newPassword || newPassword.length < 6) {
         errorEl.textContent = 'Password must be at least 6 characters';
         return;
     }
 
+    if (newPassword !== confirmPassword) {
+        errorEl.textContent = 'Passwords do not match';
+        return;
+    }
+
     try {
         await API.resetPassword(token, newPassword);
         document.querySelector('.modal').remove();
-        alert('✅ Password reset successful! You can now login.');
-        navigateTo('login');
+        
+        const successModal = document.createElement('div');
+        successModal.className = 'modal';
+        successModal.style.display = 'block';
+        successModal.innerHTML = `
+            <div class="modal-content success-modal">
+                <div class="success-icon">✓</div>
+                <h2>Password Reset Successful!</h2>
+                <p>You can now login with your new password</p>
+                <button class="modal-btn modal-btn-confirm" onclick="this.closest('.modal').remove(); navigateTo('login');">
+                    Go to Login
+                </button>
+            </div>
+        `;
+        document.body.appendChild(successModal);
     } catch (error) {
         errorEl.textContent = error.message;
     }
@@ -685,8 +928,16 @@ const Leaderboard = {
         
         try {
             const leaderboard = await API.getLeaderboard(game);
-            const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎' };
+            const icons = { 
+                crash: '🚀', 
+                dice: '🎲', 
+                blackjack: '🃏', 
+                plinko: '🎯', 
+                mines: '💎',
+                cases: '📦'
+            };
             
+            const isCases = game === 'cases';
             let html = `<h2>${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)} Leaderboard</h2>`;
             
             if (leaderboard.length === 0) {
@@ -694,11 +945,19 @@ const Leaderboard = {
             } else {
                 leaderboard.forEach((user, index) => {
                     const isCurrentUser = currentUser && user.username === currentUser.username;
+                    const displayValue = isCases 
+                        ? `$${parseFloat(user.total_profit).toFixed(0)} profit`
+                        : `${user.won} wins`;
+                    
+                    const valueColor = isCases 
+                        ? (parseFloat(user.total_profit) >= 0 ? '#22c55e' : '#ef4444')
+                        : '#22c55e';
+                    
                     html += `
                         <div class="leaderboard-item ${isCurrentUser ? 'highlight' : ''}">
                             <div class="leaderboard-rank">#${index + 1}</div>
                             <div class="leaderboard-user">${user.username}</div>
-                            <div class="leaderboard-wins">${user.won} wins</div>
+                            <div class="leaderboard-wins" style="color: ${valueColor};">${displayValue}</div>
                         </div>
                     `;
                 });

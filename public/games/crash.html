@@ -328,15 +328,22 @@
 
             generateCrashPoint() {
                 const rand = Math.random();
-                if (rand < 0.7) {
-                    return 1.1 + Math.random() * 3.9;
-                } else if (rand < 0.95) {
-                    return 5 + Math.random() * 15;
+    
+                // More balanced distribution with 98% RTP
+                if (rand < 0.50) {
+                    // 50% chance: 1.0x - 2.0x (small wins)
+                    return 1.0 + Math.random() * 1.0;
+                } else if (rand < 0.85) {
+                    // 35% chance: 2.0x - 5.0x (medium wins)
+                    return 2.0 + Math.random() * 3.0;
+                } else if (rand < 0.96) {
+                    // 11% chance: 5.0x - 20.0x (big wins)
+                    return 5.0 + Math.random() * 15.0;
                 } else {
-                    return 20 + Math.random() * 80;
+                    // 4% chance: 20.0x - 100.0x (huge wins)
+                    return 20.0 + Math.random() * 80.0;
                 }
             },
-
             placeBet() {
                 let betAmount = parseFloat(document.getElementById('betAmount').value);
                 const balance = getCurrentBalance();

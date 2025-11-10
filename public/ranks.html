@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranks & XP System</title>
+    <style>
+        .ranks-page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .ranks-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .ranks-header h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .ranks-header p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .xp-explainer {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 20px var(--card-shadow);
+        }
+
+        .xp-explainer h2 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .xp-method {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .xp-method-icon {
+            font-size: 32px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .xp-method-text h3 {
+            color: var(--text-primary);
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+
+        .xp-method-text p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .ranks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .rank-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 20px var(--card-shadow);
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .rank-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+        }
+
+        .rank-emoji {
+            font-size: 80px;
+            margin-bottom: 15px;
+        }
+
+        .rank-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .rank-level {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .rank-xp {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .rank-benefits {
+            text-align: left;
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .rank-benefits h4 {
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .rank-benefits ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .rank-benefits li {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .rank-benefits li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .rank-max {
+            border: 3px solid #fbbf24;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+        }
+
+        @media (max-width: 768px) {
+            .ranks-header h1 {
+                font-size: 36px;
+            }
+
+            .ranks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .rank-emoji {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ranks-page-container">
+        <div class="ranks-header">
+            <h1>🏆 Ranks & XP System</h1>
+            <p>Progress through ranks by earning XP from winning games. Each rank unlocks shop points and increases your deposit limits!</p>
+        </div>
+
+        <div class="xp-explainer">
+            <h2>💫 How to Earn XP</h2>
+            <div class="xp-method">
+                <div class="xp-method-icon">🎮</div>
+                <div class="xp-method-text">
+                    <h3>Win Games</h3>
+                    <p>Earn 10 XP for every game you win across all game modes</p>
+                </div>
+            </div>
+            <div class="xp-method">
+                <div class="xp-method-icon">💰</div>
+                <div class="xp-method-text">
+                    <h3>Big Wins Bonus</h3>
+                    <p>Earn +5 XP bonus when you win with a 3x+ multiplier</p>
+                </div>
+            </div>
+            <div class="xp-method">
+                <div class="xp-method-icon">🚀</div>
+                <div class="xp-method-text">
+                    <h3>Huge Wins Bonus</h3>
+                    <p>Earn +10 XP bonus when you win with a 10x+ multiplier</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ranks-grid" id="ranksGrid"></div>
+    </div>
+
+    <script>
+        const ranks = [
+            { 
+                name: 'No Rank', 
+                emoji: '⚪', 
+                minXP: 0, 
+                shopPoints: 0,
+                benefits: ['$10,000 max deposit per transaction', 'Access to all games', 'Basic profile customization']
+            },
+            { 
+                name: 'Bronze', 
+                emoji: '🥉', 
+                minXP: 50, 
+                shopPoints: 50,
+                benefits: ['50 Shop Points reward', '$15,000 max deposit', 'Bronze profile badge']
+            },
+            { 
+                name: 'Silver', 
+                emoji: '🥈', 
+                minXP: 100, 
+                shopPoints: 100,
+                benefits: ['100 Shop Points reward', '$20,000 max deposit', 'Silver profile badge', 'Priority support']
+            },
+            { 
+                name: 'Gold', 
+                emoji: '🥇', 
+                minXP: 200, 
+                shopPoints: 200,
+                benefits: ['200 Shop Points reward', '$30,000 max deposit', 'Gold profile badge', 'Exclusive chat color']
+            },
+            { 
+                name: 'Platinum', 
+                emoji: '💎', 
+                minXP: 350, 
+                shopPoints: 350,
+                benefits: ['350 Shop Points reward', '$50,000 max deposit', 'Platinum profile badge', 'VIP support']
+            },
+            { 
+                name: 'Diamond', 
+                emoji: '💠', 
+                minXP: 600, 
+                shopPoints: 500,
+                benefits: ['500 Shop Points reward', '$75,000 max deposit', 'Diamond profile badge', 'Custom profile themes']
+            },
+            { 
+                name: 'Ruby', 
+                emoji: '💜', 
+                minXP: 1000, 
+                shopPoints: 1000,
+                benefits: ['1,000 Shop Points reward', '$100,000 max deposit', 'Ruby profile badge', 'Animated profile effects']
+            },
+            { 
+                name: 'Master', 
+                emoji: '🎖️', 
+                minXP: 1500, 
+                shopPoints: 1750,
+                benefits: ['1,750 Shop Points reward', '$150,000 max deposit', 'Master badge', 'Priority game access']
+            },
+            { 
+                name: 'Grandmaster', 
+                emoji: '👑', 
+                minXP: 2500, 
+                shopPoints: 3000,
+                benefits: ['3,000 Shop Points reward', '$250,000 max deposit', 'Grandmaster badge', 'Exclusive features']
+            },
+            { 
+                name: 'Legend', 
+                emoji: '🌟', 
+                minXP: 4000, 
+                shopPoints: 5000,
+                benefits: ['5,000 Shop Points reward', '$500,000 max deposit', 'Legend badge', 'Hall of Fame entry']
+            },
+            { 
+                name: 'Mythic', 
+                emoji: '🦄', 
+                minXP: 6000, 
+                shopPoints: 7500,
+                benefits: ['7,500 Shop Points reward', '$1,000,000 max deposit', 'Mythic badge', 'Ultra rare customization']
+            },
+            { 
+                name: 'Immortal', 
+                emoji: '🔱', 
+                minXP: 9000, 
+                shopPoints: 10000,
+                benefits: ['10,000 Shop Points reward', '$2,500,000 max deposit', 'Immortal badge', 'Legendary status']
+            },
+            { 
+                name: 'Eternal', 
+                emoji: '🛡️', 
+                minXP: 15000, 
+                shopPoints: 20000,
+                benefits: ['20,000 Shop Points reward', 'Unlimited deposits', 'Eternal badge', 'Maximum prestige']
+            }
+        ];
+
+        function renderRanks() {
+            const grid = document.getElementById('ranksGrid');
+            grid.innerHTML = ranks.map((rank, index) => `
+                <div class="rank-card ${index === ranks.length - 1 ? 'rank-max' : ''}">
+                    <div class="rank-emoji">${rank.emoji}</div>
+                    <div class="rank-name">${rank.name}</div>
+                    <div class="rank-level">Level ${index}</div>
+                    <div class="rank-xp">${rank.minXP === 0 ? 'Starting Rank' : rank.minXP + ' XP Required'}</div>
+                    <div class="rank-benefits">
+                        <h4>🎁 Rank Benefits:</h4>
+                        <ul>
+                            ${rank.benefits.map(b => `<li>${b}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        renderRanks();
+    </script>
+</body>
+</html>

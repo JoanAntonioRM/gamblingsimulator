@@ -33,6 +33,7 @@
             <h3>Menu</h3>
             <button class="close-menu" onclick="toggleMenu()">✕</button>
         </div>
+        
         <div class="menu-section">
             <div class="menu-title">Games</div>
             <div class="menu-item" onclick="navigateTo('crash'); toggleMenu();">
@@ -54,19 +55,39 @@
                 <span class="menu-icon">📦</span> Cases
             </div>
         </div>
+
         <div class="menu-divider"></div>
-        <div class="menu-item" onclick="navigateTo('shop'); toggleMenu();">
-            <span class="menu-icon">🛒</span> Shop Points
+
+        <div class="menu-section">
+            <div class="menu-title">Features</div>
+            <div class="menu-item" onclick="navigateTo('ranks'); toggleMenu();">
+                <span class="menu-icon">🏆</span> Ranks & XP
+            </div>
+            <div class="menu-item" onclick="navigateTo('shop'); toggleMenu();">
+                <span class="menu-icon">🛒</span> Shop Points
+            </div>
+            <div class="menu-item" onclick="navigateTo('leaderboard'); toggleMenu();">
+                <span class="menu-icon">📊</span> Leaderboard
+            </div>
         </div>
-        <div class="menu-item" onclick="navigateTo('leaderboard'); toggleMenu();">
-            <span class="menu-icon">🏆</span> Leaderboard
-        </div>
+
         <div class="menu-divider"></div>
-        <div class="menu-item theme-switcher" onclick="toggleTheme()">
-            <span class="menu-icon">
-                <span id="themeIcon">🌙</span>
-            </span>
-            <span id="themeText">Dark Mode</span>
+
+        <div class="menu-section">
+            <div class="menu-title">Settings</div>
+            <div class="menu-item" onclick="navigateTo('settings'); toggleMenu();">
+                <span class="menu-icon">⚙️</span> Account Settings
+            </div>
+            <div class="menu-item theme-switcher" onclick="toggleTheme()">
+                <span class="menu-icon">
+                    <span id="themeIcon">🌙</span>
+                </span>
+                <span id="themeText">Dark Mode</span>
+            </div>
+            <div class="menu-item" onclick="toggleGameSounds()">
+                <span class="menu-icon">🔊</span>
+                <span id="soundToggleText">Sound: ON</span>
+            </div>
         </div>
     </div>
 
@@ -78,10 +99,11 @@
         <!-- Dynamic content will be loaded here -->
     </div>
 
-    <!-- Load JavaScript files - IMPORTANT: api.js MUST BE FIRST -->
+    <!-- Load JavaScript files - ORDER MATTERS -->
     <script src="js/api.js"></script>
     <script src="js/ranking.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/game-sounds.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
