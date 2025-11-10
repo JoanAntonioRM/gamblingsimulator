@@ -9,15 +9,15 @@ const Ranking = {
         { name: 'Bronze', emoji: '🥉', minXP: 50, shopPoints: 50, maxDeposit: 15000 },
         { name: 'Silver', emoji: '🥈', minXP: 100, shopPoints: 100, maxDeposit: 20000 },
         { name: 'Gold', emoji: '🥇', minXP: 200, shopPoints: 200, maxDeposit: 30000 },
-        { name: 'Platinum', emoji: '💎', minXP: 350, shopPoints: 350, maxDeposit: 50000 },
+        { name: 'Platinum', emoji: '💎', minXP: 300, shopPoints: 350, maxDeposit: 50000 },
         { name: 'Diamond', emoji: '💠', minXP: 600, shopPoints: 500, maxDeposit: 75000 },
-        { name: 'Ruby', emoji: '💜', minXP: 1000, shopPoints: 1000, maxDeposit: 100000 },
-        { name: 'Master', emoji: '🎖️', minXP: 1500, shopPoints: 1750, maxDeposit: 150000 },
+        { name: 'Ruby', emoji: '💜', minXP: 800, shopPoints: 1000, maxDeposit: 100000 },
+        { name: 'Master', emoji: '🎖️', minXP: 1500, shopPoints: 1800, maxDeposit: 150000 },
         { name: 'Grandmaster', emoji: '👑', minXP: 2500, shopPoints: 3000, maxDeposit: 250000 },
-        { name: 'Legend', emoji: '🌟', minXP: 4000, shopPoints: 5000, maxDeposit: 500000 },
+        { name: 'Legend', emoji: '🌟', minXP: 3500, shopPoints: 5000, maxDeposit: 500000 },
         { name: 'Mythic', emoji: '🦄', minXP: 6000, shopPoints: 7500, maxDeposit: 1000000 },
-        { name: 'Immortal', emoji: '🔱', minXP: 9000, shopPoints: 10000, maxDeposit: 2500000 },
-        { name: 'Eternal', emoji: '🛡️', minXP: 15000, shopPoints: 20000, maxDeposit: Infinity }
+        { name: 'Immortal', emoji: '🛡️', minXP: 8000, shopPoints: 10000, maxDeposit: 2500000 },
+        { name: 'Eternal', emoji: '🔱', minXP: 10000, shopPoints: 25000, maxDeposit: Infinity }
     ],
 
     /**
