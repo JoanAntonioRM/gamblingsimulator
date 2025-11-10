@@ -128,7 +128,8 @@ const Ranking = {
             <div class="rank-name">${rank.name}</div>
             <div style="color: #666; margin-bottom: 10px;">Level ${rank.index}</div>
             <div class="xp-bar-container">
-                <div class="xp-bar" style="width: ${progress.percentage}%">
+                <div class="xp-bar" style="width: ${progress.percentage}%"></div>
+                <div class ="xp-bar-text">
                     ${progress.current} / ${progress.isMaxRank ? 'MAX' : progress.max} XP
                 </div>
             </div>

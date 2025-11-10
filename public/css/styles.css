@@ -8,7 +8,7 @@
 /* Theme Variables */
 :root[data-theme="light"] {
     --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --bg-secondary: white;
+    --bg-secondary: rgb(224, 224, 224);
     --text-primary: #333;
     --text-secondary: #666;
     --text-tertiary: #999;
@@ -363,7 +363,6 @@ body {
 }
 
 .leaderboard-item.highlight {
-    background: #fef3c7;
     font-weight: bold;
     border-left: 4px solid #f59e0b;
 }
