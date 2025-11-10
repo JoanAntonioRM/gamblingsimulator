@@ -1,9 +1,6 @@
-/**
- * api.js - Frontend API Client with Password Reset
- */
+// Updated api.js - Add this method to the API object
 
 const API = {
-    // Update this to your backend URL
     BASE_URL: 'https://2fzd4f73n1.execute-api.us-east-2.amazonaws.com/api',
     
     getToken() {
@@ -48,8 +45,7 @@ const API = {
         }
     },
     
-    // ========== AUTH ENDPOINTS ==========
-    
+    // AUTH ENDPOINTS
     async register(username, password, email = null) {
         const data = await this.request('/auth/register', {
             method: 'POST',
@@ -94,8 +90,7 @@ const API = {
         this.clearToken();
     },
     
-    // ========== USER ENDPOINTS ==========
-    
+    // USER ENDPOINTS
     async getProfile() {
         return await this.request('/user/profile');
     },
@@ -127,8 +122,7 @@ const API = {
         });
     },
     
-    // ========== GAME ENDPOINTS ==========
-    
+    // GAME ENDPOINTS
     async updateGameStats(game, won, betAmount, winAmount) {
         return await this.request('/game/stats', {
             method: 'POST',
@@ -140,8 +134,12 @@ const API = {
         return await this.request(`/leaderboard/${game}`);
     },
     
-    // ========== HEALTH CHECK ==========
+    // NEW: XP Leaderboard endpoint
+    async getXPLeaderboard() {
+        return await this.request('/leaderboard/xp');
+    },
     
+    // HEALTH CHECK
     async healthCheck() {
         try {
             const response = await fetch(`${this.BASE_URL}/health`);

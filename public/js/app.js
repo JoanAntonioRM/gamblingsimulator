@@ -3,7 +3,6 @@ let guestBalance = 1000;
 let currentPage = 'main';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Add favicon
     const favicon = document.createElement('link');
     favicon.rel = 'icon';
     favicon.type = 'image/svg+xml';
@@ -11,7 +10,31 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(favicon);
     
     initializeApp();
+    showLoadingWarning(); // NEW: Show loading warning
 });
+
+// NEW: Show loading warning message
+function showLoadingWarning() {
+    const message = document.createElement('div');
+    message.style.cssText = `
+        position: fixed;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f59e0b;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 8px;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        max-width: 90%;
+        text-align: center;
+    `;
+    message.innerHTML = '⚠️ If things don\'t load properly, please refresh the page';
+    document.body.appendChild(message);
+    
+    setTimeout(() => message.remove(), 8000);
+}
 
 async function initializeApp() {
     const isBackendUp = await API.healthCheck();
@@ -237,7 +260,11 @@ async function loadUserPage(content) {
         console.error('Failed to refresh user data:', error);
     }
     
-    const profit = currentUser.actualProfit || 0;
+    // FIXED: Calculate actual profit correctly
+    const actualProfit = currentUser.totalWon - currentUser.totalBet;
+    const totalGamesPlayed = Object.values(currentUser.games).reduce((sum, game) => sum + game.played, 0);
+    const totalWins = Object.values(currentUser.games).reduce((sum, game) => sum + game.won, 0);
+    const totalLosses = Object.values(currentUser.games).reduce((sum, game) => sum + game.lost, 0);
     
     content.innerHTML = `
         <button class="back-btn" onclick="navigateTo('main')">← Back</button>
@@ -250,8 +277,8 @@ async function loadUserPage(content) {
                 <div class="stat-label">Total Bet</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" style="color: ${profit >= 0 ? '#22c55e' : '#ef4444'}">
-                    ${profit >= 0 ? '+' : ''}$${profit.toFixed(0)}
+                <div class="stat-value" style="color: ${actualProfit >= 0 ? '#22c55e' : '#ef4444'}">
+                    ${actualProfit >= 0 ? '+' : ''}$${actualProfit.toFixed(0)}
                 </div>
                 <div class="stat-label">Net Profit</div>
                 <div class="stat-details">
@@ -261,7 +288,21 @@ async function loadUserPage(content) {
                     </div>
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Lost</div>
-                        <div class="stat-detail-value negative">-$${currentUser.totalLost.toFixed(0)}</div>
+                        <div class="stat-detail-value negative">-$${(currentUser.totalBet - currentUser.totalWon + actualProfit).toFixed(0)}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${totalGamesPlayed}</div>
+                <div class="stat-label">Games Played</div>
+                <div class="stat-details">
+                    <div class="stat-detail-item">
+                        <div class="stat-detail-label">Won</div>
+                        <div class="stat-detail-value positive">${totalWins}</div>
+                    </div>
+                    <div class="stat-detail-item">
+                        <div class="stat-detail-label">Lost</div>
+                        <div class="stat-detail-value negative">${totalLosses}</div>
                     </div>
                 </div>
             </div>
@@ -413,14 +454,24 @@ function loadShopPage(content) {
 }
 
 async function loadLeaderboardPage(content) {
-    const games = ['crash', 'dice', 'blackjack', 'plinko', 'mines', 'cases'];
+    const games = ['xp', 'crash', 'dice', 'blackjack', 'plinko', 'mines', 'cases'];
     const icons = { 
+        xp: '🏆',
         crash: '🚀', 
         dice: '🎲', 
         blackjack: '🃏', 
         plinko: '🎯', 
         mines: '💎',
         cases: '📦'
+    };
+    const names = {
+        xp: 'XP Rankings',
+        crash: 'Crash',
+        dice: 'Dice',
+        blackjack: 'Blackjack',
+        plinko: 'Plinko',
+        mines: 'Mines',
+        cases: 'Cases'
     };
     
     content.innerHTML = `
@@ -432,13 +483,13 @@ async function loadLeaderboardPage(content) {
     `;
     
     const tabsHTML = games.map(game => `
-        <div class="game-tab ${game === 'crash' ? 'active' : ''}" onclick="Leaderboard.showGame('${game}')">
-            ${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)}
+        <div class="game-tab ${game === 'xp' ? 'active' : ''}" onclick="Leaderboard.showGame('${game}')">
+            ${icons[game]} ${names[game]}
         </div>
     `).join('');
     
     document.getElementById('leaderboardTabs').innerHTML = tabsHTML;
-    await Leaderboard.showGame('crash');
+    await Leaderboard.showGame('xp'); // Default to XP
 }
 
 async function loadGamePage(content, game) {
@@ -916,7 +967,7 @@ function showRankUpNotification(newRank) {
 }
 
 const Leaderboard = {
-    currentGame: 'crash',
+    currentGame: 'xp',
     
     async showGame(game) {
         this.currentGame = game;
@@ -927,8 +978,15 @@ const Leaderboard = {
         event.target.classList.add('active');
         
         try {
-            const leaderboard = await API.getLeaderboard(game);
+            let leaderboard;
+            if (game === 'xp') {
+                leaderboard = await API.getXPLeaderboard();
+            } else {
+                leaderboard = await API.getLeaderboard(game);
+            }
+            
             const icons = { 
+                xp: '🏆',
                 crash: '🚀', 
                 dice: '🎲', 
                 blackjack: '🃏', 
@@ -937,30 +995,56 @@ const Leaderboard = {
                 cases: '📦'
             };
             
-            const isCases = game === 'cases';
-            let html = `<h2>${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)} Leaderboard</h2>`;
+            const names = {
+                xp: 'XP Rankings',
+                crash: 'Crash',
+                dice: 'Dice',
+                blackjack: 'Blackjack',
+                plinko: 'Plinko',
+                mines: 'Mines',
+                cases: 'Cases'
+            };
+            
+            let html = `<h2>${icons[game]} ${names[game]} Leaderboard</h2>`;
             
             if (leaderboard.length === 0) {
-                html += '<div style="text-align: center; color: var(--text-secondary); padding: 40px;">No games played yet</div>';
+                html += '<div style="text-align: center; color: var(--text-secondary); padding: 40px;">No data yet</div>';
             } else {
-                leaderboard.forEach((user, index) => {
-                    const isCurrentUser = currentUser && user.username === currentUser.username;
-                    const displayValue = isCases 
-                        ? `$${parseFloat(user.total_profit).toFixed(0)} profit`
-                        : `${user.won} wins`;
-                    
-                    const valueColor = isCases 
-                        ? (parseFloat(user.total_profit) >= 0 ? '#22c55e' : '#ef4444')
-                        : '#22c55e';
-                    
-                    html += `
-                        <div class="leaderboard-item ${isCurrentUser ? 'highlight' : ''}">
-                            <div class="leaderboard-rank">#${index + 1}</div>
-                            <div class="leaderboard-user">${user.username}</div>
-                            <div class="leaderboard-wins" style="color: ${valueColor};">${displayValue}</div>
-                        </div>
-                    `;
-                });
+                if (game === 'xp') {
+                    leaderboard.forEach((user, index) => {
+                        const isCurrentUser = currentUser && user.username === currentUser.username;
+                        html += `
+                            <div class="leaderboard-item ${isCurrentUser ? 'highlight' : ''}">
+                                <div class="leaderboard-rank">#${index + 1}</div>
+                                <div class="leaderboard-user">
+                                    ${user.rankEmoji} ${user.username}
+                                    <small style="color: var(--text-tertiary); margin-left: 8px;">${user.rank}</small>
+                                </div>
+                                <div class="leaderboard-wins" style="color: #667eea;">${user.xp} XP</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    const isCases = game === 'cases';
+                    leaderboard.forEach((user, index) => {
+                        const isCurrentUser = currentUser && user.username === currentUser.username;
+                        const displayValue = isCases 
+                            ? `$${parseFloat(user.total_profit).toFixed(0)} profit`
+                            : `${user.won} wins`;
+                        
+                        const valueColor = isCases 
+                            ? (parseFloat(user.total_profit) >= 0 ? '#22c55e' : '#ef4444')
+                            : '#22c55e';
+                        
+                        html += `
+                            <div class="leaderboard-item ${isCurrentUser ? 'highlight' : ''}">
+                                <div class="leaderboard-rank">#${index + 1}</div>
+                                <div class="leaderboard-user">${user.username}</div>
+                                <div class="leaderboard-wins" style="color: ${valueColor};">${displayValue}</div>
+                            </div>
+                        `;
+                    });
+                }
             }
             
             document.getElementById('leaderboardContent').innerHTML = html;

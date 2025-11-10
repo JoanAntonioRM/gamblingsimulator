@@ -78,7 +78,6 @@
             text-align: center;
         }
 
-        /* Opening Animation */
         .opening-overlay {
             position: fixed;
             top: 0;
@@ -218,7 +217,6 @@
             background: #5568d3;
         }
 
-        /* Case Details Modal */
         .case-modal {
             position: fixed;
             top: 0;
@@ -355,7 +353,6 @@
         <div class="cases-grid" id="casesGrid"></div>
     </div>
 
-    <!-- Case Details Modal -->
     <div class="case-modal" id="caseModal">
         <div class="case-modal-content">
             <div class="modal-header">
@@ -371,7 +368,6 @@
         </div>
     </div>
 
-    <!-- Opening Animation Overlay -->
     <div class="opening-overlay" id="openingOverlay">
         <div class="spinner-container">
             <div class="spinner-window"></div>
@@ -383,6 +379,7 @@
     <script>
         const CasesGame = {
             selectedCase: null,
+            isAnimating: false,
             
             cases: [
                 {
@@ -534,6 +531,156 @@
                         { name: "God Tier", icon: "⚡", value: 300000, rarity: "red", chance: 4 },
                         { name: "Infinity Edge", icon: "♾️", value: 600000, rarity: "gold", chance: 1 }
                     ]
+                },
+                {
+                    id: 11,
+                    name: "Titan Case",
+                    icon: "⚡",
+                    price: 75000,
+                    items: [
+                        { name: "Titan Blade", icon: "⚔️", value: 37500, rarity: "blue", chance: 60 },
+                        { name: "Thunder Gun", icon: "🌩️", value: 60000, rarity: "blue", chance: 60 },
+                        { name: "Storm Rifle", icon: "🌪️", value: 90000, rarity: "purple", chance: 25 },
+                        { name: "Lightning Strike", icon: "⚡", value: 150000, rarity: "purple", chance: 25 },
+                        { name: "Zeus Weapon", icon: "👑", value: 240000, rarity: "pink", chance: 10 },
+                        { name: "Olympian", icon: "🏛️", value: 450000, rarity: "red", chance: 4 },
+                        { name: "Divine Thunder", icon: "🌟", value: 900000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 12,
+                    name: "Dragon Case",
+                    icon: "🐉",
+                    price: 100000,
+                    items: [
+                        { name: "Dragon Fang", icon: "🦷", value: 50000, rarity: "blue", chance: 60 },
+                        { name: "Wyrm Blade", icon: "🗡️", value: 80000, rarity: "blue", chance: 60 },
+                        { name: "Dragon Scale", icon: "🛡️", value: 120000, rarity: "purple", chance: 25 },
+                        { name: "Fire Breath", icon: "🔥", value: 200000, rarity: "purple", chance: 25 },
+                        { name: "Dragon Heart", icon: "❤️", value: 320000, rarity: "pink", chance: 10 },
+                        { name: "Ancient Dragon", icon: "🐲", value: 600000, rarity: "red", chance: 4 },
+                        { name: "Dragon King", icon: "👑", value: 1200000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 13,
+                    name: "Phoenix Case",
+                    icon: "🔥",
+                    price: 125000,
+                    items: [
+                        { name: "Phoenix Feather", icon: "🪶", value: 62500, rarity: "blue", chance: 60 },
+                        { name: "Rebirth Blade", icon: "⚔️", value: 100000, rarity: "blue", chance: 60 },
+                        { name: "Flame Wings", icon: "🦅", value: 150000, rarity: "purple", chance: 25 },
+                        { name: "Eternal Fire", icon: "🔥", value: 250000, rarity: "purple", chance: 25 },
+                        { name: "Phoenix Soul", icon: "💫", value: 400000, rarity: "pink", chance: 10 },
+                        { name: "Immortal Phoenix", icon: "🔱", value: 750000, rarity: "red", chance: 4 },
+                        { name: "Phoenix Reborn", icon: "✨", value: 1500000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 14,
+                    name: "Galaxy Case",
+                    icon: "🌌",
+                    price: 150000,
+                    items: [
+                        { name: "Star Dust", icon: "✨", value: 75000, rarity: "blue", chance: 60 },
+                        { name: "Nebula Gun", icon: "🌠", value: 120000, rarity: "blue", chance: 60 },
+                        { name: "Cosmic Blade", icon: "🌟", value: 180000, rarity: "purple", chance: 25 },
+                        { name: "Supernova", icon: "💥", value: 300000, rarity: "purple", chance: 25 },
+                        { name: "Black Hole", icon: "⚫", value: 480000, rarity: "pink", chance: 10 },
+                        { name: "Galaxy Core", icon: "🌌", value: 900000, rarity: "red", chance: 4 },
+                        { name: "Universe", icon: "🌍", value: 1800000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 15,
+                    name: "Celestial Case",
+                    icon: "🌟",
+                    price: 200000,
+                    items: [
+                        { name: "Angel Wings", icon: "🪽", value: 100000, rarity: "blue", chance: 60 },
+                        { name: "Holy Blade", icon: "⚔️", value: 160000, rarity: "blue", chance: 60 },
+                        { name: "Divine Light", icon: "✨", value: 240000, rarity: "purple", chance: 25 },
+                        { name: "Heavenly Strike", icon: "⚡", value: 400000, rarity: "purple", chance: 25 },
+                        { name: "Seraphim", icon: "👼", value: 640000, rarity: "pink", chance: 10 },
+                        { name: "Archangel", icon: "🛡️", value: 1200000, rarity: "red", chance: 4 },
+                        { name: "Heaven's Gate", icon: "🏰", value: 2400000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 16,
+                    name: "Demon Case",
+                    icon: "😈",
+                    price: 250000,
+                    items: [
+                        { name: "Demon Fang", icon: "🦷", value: 125000, rarity: "blue", chance: 60 },
+                        { name: "Hell Fire", icon: "🔥", value: 200000, rarity: "blue", chance: 60 },
+                        { name: "Dark Soul", icon: "💀", value: 300000, rarity: "purple", chance: 25 },
+                        { name: "Infernal Blade", icon: "🗡️", value: 500000, rarity: "purple", chance: 25 },
+                        { name: "Demon Lord", icon: "👹", value: 800000, rarity: "pink", chance: 10 },
+                        { name: "Lucifer's Pride", icon: "😈", value: 1500000, rarity: "red", chance: 4 },
+                        { name: "Hell King", icon: "👑", value: 3000000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 17,
+                    name: "Quantum Case",
+                    icon: "⚛️",
+                    price: 300000,
+                    items: [
+                        { name: "Quantum Blade", icon: "⚔️", value: 150000, rarity: "blue", chance: 60 },
+                        { name: "Particle Gun", icon: "🔫", value: 240000, rarity: "blue", chance: 60 },
+                        { name: "Atom Splitter", icon: "⚛️", value: 360000, rarity: "purple", chance: 25 },
+                        { name: "Fusion Core", icon: "💠", value: 600000, rarity: "purple", chance: 25 },
+                        { name: "Singularity", icon: "⚫", value: 960000, rarity: "pink", chance: 10 },
+                        { name: "Quantum Leap", icon: "🌀", value: 1800000, rarity: "red", chance: 4 },
+                        { name: "Reality Bender", icon: "🌌", value: 3600000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 18,
+                    name: "Omega Case",
+                    icon: "Ω",
+                    price: 350000,
+                    items: [
+                        { name: "Omega Blade", icon: "⚔️", value: 175000, rarity: "blue", chance: 60 },
+                        { name: "Final Strike", icon: "⚡", value: 280000, rarity: "blue", chance: 60 },
+                        { name: "End Game", icon: "🎯", value: 420000, rarity: "purple", chance: 25 },
+                        { name: "Terminus", icon: "🔚", value: 700000, rarity: "purple", chance: 25 },
+                        { name: "Omega Point", icon: "🎯", value: 1120000, rarity: "pink", chance: 10 },
+                        { name: "Final Destiny", icon: "✨", value: 2100000, rarity: "red", chance: 4 },
+                        { name: "Ultimate End", icon: "👑", value: 4200000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 19,
+                    name: "Eternal Case",
+                    icon: "♾️",
+                    price: 400000,
+                    items: [
+                        { name: "Eternal Flame", icon: "🔥", value: 200000, rarity: "blue", chance: 60 },
+                        { name: "Infinity Blade", icon: "⚔️", value: 320000, rarity: "blue", chance: 60 },
+                        { name: "Forever Gun", icon: "🔫", value: 480000, rarity: "purple", chance: 25 },
+                        { name: "Timeless", icon: "⏰", value: 800000, rarity: "purple", chance: 25 },
+                        { name: "Everlasting", icon: "♾️", value: 1280000, rarity: "pink", chance: 10 },
+                        { name: "Eternal Life", icon: "💫", value: 2400000, rarity: "red", chance: 4 },
+                        { name: "Infinity Stone", icon: "💎", value: 4800000, rarity: "gold", chance: 1 }
+                    ]
+                },
+                {
+                    id: 20,
+                    name: "Ascension Case",
+                    icon: "🚀",
+                    price: 500000,
+                    items: [
+                        { name: "Ascended Blade", icon: "⚔️", value: 250000, rarity: "blue", chance: 60 },
+                        { name: "Transcendent", icon: "✨", value: 400000, rarity: "blue", chance: 60 },
+                        { name: "Beyond Mortal", icon: "👁️", value: 600000, rarity: "purple", chance: 25 },
+                        { name: "God Mode", icon: "⚡", value: 1000000, rarity: "purple", chance: 25 },
+                        { name: "Enlightened", icon: "🌟", value: 1600000, rarity: "pink", chance: 10 },
+                        { name: "Nirvana", icon: "☮️", value: 3000000, rarity: "red", chance: 4 },
+                        { name: "Supreme Being", icon: "👑", value: 6000000, rarity: "gold", chance: 1 }
+                    ]
                 }
             ],
 
@@ -547,12 +694,14 @@
                     <div class="case-card" onclick="CasesGame.showCaseDetails(${c.id})">
                         <div class="case-icon">${c.icon}</div>
                         <div class="case-name">${c.name}</div>
-                        <div class="case-price">$${c.price.toLocaleString()}</div>
+                        <div class="case-price">${c.price.toLocaleString()}</div>
                     </div>
                 `).join('');
             },
 
             showCaseDetails(caseId) {
+                if (this.isAnimating) return;
+                
                 this.selectedCase = this.cases.find(c => c.id === caseId);
                 if (!this.selectedCase) return;
 
@@ -563,37 +712,45 @@
                     <div class="item-card ${item.rarity}">
                         <div class="item-icon">${item.icon}</div>
                         <div class="item-name">${item.name}</div>
-                        <div class="item-value">$${item.value.toLocaleString()}</div>
+                        <div class="item-value">${item.value.toLocaleString()}</div>
                         <div class="item-chance">${item.chance}% chance</div>
                     </div>
                 `).join('');
 
                 document.getElementById('caseModal').classList.add('active');
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
             },
 
             closeModal() {
                 document.getElementById('caseModal').classList.remove('active');
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
             },
 
             openCase(count) {
+                if (this.isAnimating) return;
+                
                 const balance = getCurrentBalance();
                 const totalCost = this.selectedCase.price * count;
 
                 if (totalCost > balance) {
                     alert('Insufficient balance!');
-                return;
+                    if (typeof GameSounds !== 'undefined') GameSounds.ui.error();
+                    return;
                 }
 
+                this.isAnimating = true;
                 updateBalance(-totalCost);
                 this.closeModal();
 
-                // Generate all results FIRST (fixes mismatch bug)
+                const resultDisplay = document.getElementById('resultDisplay');
+                resultDisplay.innerHTML = '';
+
                 const allResults = [];
                 for (let i = 0; i < count; i++) {
                     allResults.push(this.getRandomItem());
                 }
 
-                // Open all cases in parallel
+                if (typeof GameSounds !== 'undefined') GameSounds.cases.spin();
                 this.openAllCasesParallel(count, allResults, totalCost);
             },
 
@@ -601,7 +758,6 @@
                 const overlay = document.getElementById('openingOverlay');
                 overlay.classList.add('active');
 
-                // Create container for multiple spinners
                 const spinnersContainer = document.createElement('div');
                 spinnersContainer.style.cssText = `
                     display: flex;
@@ -619,21 +775,19 @@
                     document.getElementById('resultDisplay')
                 );
 
-                // Create a spinner for each case
                 for (let i = 0; i < count; i++) {
                     const spinnerDiv = this.createSpinnerElement(allResults[i], i);
                     spinnersContainer.appendChild(spinnerDiv);
-        
-                    // Start animation with slight delay for visual effect
+
                     setTimeout(() => {
                         this.animateSingleSpinner(spinnerDiv, allResults[i]);
                     }, i * 100);
                 }
 
-                // Wait for all animations to complete
                 setTimeout(() => {
                     spinnersContainer.remove();
                     this.showParallelResults(allResults, totalCost);
+                    this.isAnimating = false;
                 }, 4500 + (count * 100));
             },
 
@@ -653,17 +807,15 @@
                             background: #fbbf24; box-shadow: 0 0 20px #fbbf24; 
                             transform: translateX(-1px); z-index: 10;"></div>
                     <div class="spinner-items-${index}" style="display: flex; position: absolute; left: 0; 
-                                                                transition: left 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);"></div>
+                                                                        transition: left 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);"></div>
                 `;
 
-                // Generate spinner items
                 const items = [];
                 for (let j = 0; j < 50; j++) {
                     const randomItem = this.selectedCase.items[Math.floor(Math.random() * this.selectedCase.items.length)];
                     items.push(randomItem);
                 }
-    
-                // Insert won item at specific position
+
                 const winPosition = 42;
                 items[winPosition] = wonItem;
 
@@ -674,7 +826,7 @@
                                 justify-content: center; padding: 10px; border: 2px solid ${this.getRarityColor(item.rarity)};">
                         <div style="font-size: 48px; margin-bottom: 5px;">${item.icon}</div>
                         <div style="font-size: 10px; color: white; text-align: center; margin-bottom: 3px;">${item.name}</div>
-                        <div style="font-size: 12px; font-weight: bold; color: #fbbf24;">$${item.value.toLocaleString()}</div>
+                        <div style="font-size: 12px; font-weight: bold; color: #fbbf24;">${item.value.toLocaleString()}</div>
                     </div>
                 `).join('');
 
@@ -703,31 +855,28 @@
                 }, 100);
             },
 
-            showResult(item) {
-                const resultDisplay = document.getElementById('resultDisplay');
-                
-                resultDisplay.innerHTML = `
-                    <div class="result-item ${item.rarity}">
-                        <div class="result-item-icon">${item.icon}</div>
-                        <div class="result-item-name">${item.name}</div>
-                        <div class="result-item-value">$${item.value.toLocaleString()}</div>
-                    </div>
-                `;
-            },
-
             showParallelResults(results, totalCost) {
                 const totalWon = results.reduce((sum, item) => sum + item.value, 0);
                 const profit = totalWon - totalCost;
 
                 updateBalance(totalWon);
 
+                if (typeof GameSounds !== 'undefined') {
+                    if (profit > 0) {
+                        const hasGold = results.some(r => r.rarity === 'gold');
+                        const hasRed = results.some(r => r.rarity === 'red');
+                        if (hasGold) GameSounds.cases.reveal('gold');
+                        else if (hasRed) GameSounds.cases.reveal('red');
+                        else GameSounds.cases.reveal('blue');
+                    }
+                }
+
                 const resultDisplay = document.getElementById('resultDisplay');
-    
-                // Group items by rarity for better display
+
                 const itemsByRarity = {};
                 results.forEach(item => {
                     if (!itemsByRarity[item.rarity]) {
-                            itemsByRarity[item.rarity] = [];
+                        itemsByRarity[item.rarity] = [];
                     }
                     itemsByRarity[item.rarity].push(item);
                 });
@@ -744,7 +893,7 @@
                                     <div style="font-size: 32px;">${item.icon}</div>
                                     <div style="font-size: 11px; color: white; margin-top: 5px;">${item.name}</div>
                                     <div style="font-size: 13px; font-weight: bold; color: #fbbf24; margin-top: 3px;">
-                                        $${item.value.toLocaleString()}
+                                        ${item.value.toLocaleString()}
                                     </div>
                                 </div>
                             `).join('')}
@@ -759,17 +908,15 @@
                         ${itemsHTML}
                     </div>
                     <div style="font-size: 22px; margin-bottom: 10px; color: white;">
-                        Total Value: <span style="color: #fbbf24;">$${totalWon.toLocaleString()}</span>
+                        Total Value: <span style="color: #fbbf24;">${totalWon.toLocaleString()}</span>
                     </div>
                     <div class="result-profit ${profit >= 0 ? 'profit' : 'loss'}">
-                        ${profit >= 0 ? 'Profit' : 'Loss'}: ${profit >= 0 ? '+' : ''}$${Math.abs(profit).toLocaleString()}
+                        ${profit >= 0 ? 'Profit' : 'Loss'}: ${profit >= 0 ? '+' : ''}${Math.abs(profit).toLocaleString()}
                     </div>
                     <button class="close-btn" onclick="CasesGame.closeOverlay()">Close</button>
                 `;
 
-                // Update game stats
                 if (currentUser && results.length > 0) {
-                    // For cases, track profit as the "win" metric
                     updateGameStats('cases', profit > 0, totalCost, totalWon);
                 }
             },
@@ -781,7 +928,7 @@
 
                 for (let item of items) {
                     if (random < item.chance) {
-                        return {...item}; // Return a COPY to avoid reference issues
+                        return {...item};
                     }
                     random -= item.chance;
                 }
@@ -791,6 +938,7 @@
 
             closeOverlay() {
                 document.getElementById('openingOverlay').classList.remove('active');
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
                 const spinnerItems = document.getElementById('spinnerItems');
                 spinnerItems.style.transition = 'none';
                 spinnerItems.style.left = '0px';
