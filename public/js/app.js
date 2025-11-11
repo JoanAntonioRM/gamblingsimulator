@@ -1113,7 +1113,7 @@ async function loadCasesPage(content) {
         
         const gameContainer = document.createElement('div');
         gameContainer.innerHTML = html;
-        content.appendChild(gameContainer);z
+        content.appendChild(gameContainer);
         
         const scripts = gameContainer.querySelectorAll('script');
         scripts.forEach(script => {
