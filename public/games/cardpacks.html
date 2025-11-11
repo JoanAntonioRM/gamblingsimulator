@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Packs Opening</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        .packs-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .packs-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .packs-header h1 {
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .packs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .pack-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pack-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .pack-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .pack-icon {
+            font-size: 80px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .pack-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .pack-price {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        .pack-card.bronze { border: 3px solid #cd7f32; }
+        .pack-card.silver { border: 3px solid #c0c0c0; }
+        .pack-card.gold { border: 3px solid #ffd700; }
+        .pack-card.diamond { border: 3px solid #b9f2ff; }
+        .pack-card.legendary { border: 3px solid #ff00ff; }
+
+        .opening-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .opening-overlay.active {
+            display: flex;
+        }
+
+        .cards-reveal-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+            margin-bottom: 40px;
+        }
+
+        .card-wrapper {
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 180px;
+            height: 250px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 48px;
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            color: #333;
+        }
+
+        .card-back.rare {
+            animation: glowPulse 1.5s infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px #fbbf24; }
+            50% { box-shadow: 0 0 40px #f59e0b; }
+        }
+
+        .card-image {
+            font-size: 64px;
+            margin-bottom: 10px;
+        }
+
+        .card-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .card-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #22c55e;
+        }
+
+        .result-display {
+            text-align: center;
+            color: white;
+        }
+
+        .result-summary {
+            background: #1f2937;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+
+        .result-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .result-value {
+            font-size: 32px;
+            color: #fbbf24;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-profit {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+
+        .result-profit.profit { color: #22c55e; }
+        .result-profit.loss { color: #ef4444; }
+
+        .close-btn {
+            background: #667eea;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .close-btn:hover {
+            background: #5568d3;
+        }
+
+        .pack-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 999;
+            display: none;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .pack-modal.active {
+            display: block;
+        }
+
+        .pack-modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-close {
+            font-size: 32px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .pack-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .pack-info-icon {
+            font-size: 100px;
+            margin-bottom: 15px;
+        }
+
+        .pack-info-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .pack-info-price {
+            font-size: 36px;
+            color: #fbbf24;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .pack-info-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .open-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .open-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #4ade80;
+            color: white;
+        }
+
+        .open-btn:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .open-btn.multiple {
+            background: #667eea;
+        }
+
+        .open-btn.multiple:hover {
+            background: #5568d3;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                width: 140px;
+                height: 200px;
+            }
+
+            .card-image {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="packs-container">
+        <div class="packs-header">
+            <h1>🎴 Card Packs Opening</h1>
+            <p style="color: var(--text-secondary); font-size: 18px;">Open packs and discover rare cards!</p>
+        </div>
+
+        <div class="packs-grid" id="packsGrid"></div>
+    </div>
+
+    <div class="pack-modal" id="packModal">
+        <div class="pack-modal-content">
+            <div class="modal-header">
+                <h2 id="modalPackName">Pack Name</h2>
+                <span class="modal-close" onclick="CardPacksGame.closeModal()">×</span>
+            </div>
+            <div class="pack-info" id="packInfo"></div>
+            <div class="open-controls">
+                <button class="open-btn" onclick="CardPacksGame.openPacks(1)">Open 1 Pack</button>
+                <button class="open-btn multiple" onclick="CardPacksGame.openPacks(3)">Open 3 Packs</button>
+                <button class="open-btn multiple" onclick="CardPacksGame.openPacks(10)">Open 10 Packs</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="opening-overlay" id="openingOverlay">
+        <div class="cards-reveal-container" id="cardsContainer"></div>
+        <div class="result-display" id="resultDisplay"></div>
+    </div>
+
+    <script>
+        const CardPacksGame = {
+            selectedPack: null,
+            isOpening: false,
+            
+            packs: [
+                {
+                    id: 1,
+                    name: "Bronze Pack",
+                    icon: "🥉",
+                    price: 10,
+                    tier: "bronze",
+                    description: "Perfect for beginners! Contains 5 cards with varying rarities."
+                },
+                {
+                    id: 2,
+                    name: "Silver Pack",
+                    icon: "🥈",
+                    price: 100,
+                    tier: "silver",
+                    description: "Step up your game! Higher chances for rare cards."
+                },
+                {
+                    id: 3,
+                    name: "Gold Pack",
+                    icon: "🥇",
+                    price: 500,
+                    tier: "gold",
+                    description: "Premium pack with excellent rewards!"
+                },
+                {
+                    id: 4,
+                    name: "Diamond Pack",
+                    icon: "💎",
+                    price: 1000,
+                    tier: "diamond",
+                    description: "Ultra-rare pack for serious collectors!"
+                },
+                {
+                    id: 5,
+                    name: "Legendary Pack",
+                    icon: "👑",
+                    price: 5000,
+                    tier: "legendary",
+                    description: "The ultimate pack! Maximum value potential!"
+                }
+            ],
+
+            cardDatabase: {
+                bronze: [
+                    {name: "Common Starter", icon: "🌱", value: 1, rarity: 60},
+                    {name: "Basic Shield", icon: "🛡️", value: 2, rarity: 55},
+                    {name: "Wooden Sword", icon: "🗡️", value: 3, rarity: 50},
+                    {name: "Training Boots", icon: "👟", value: 4, rarity: 45},
+                    {name: "Health Potion", icon: "🧪", value: 5, rarity: 40},
+                    {name: "Bronze Coin", icon: "🪙", value: 8, rarity: 30},
+                    {name: "Magic Book", icon: "📖", value: 12, rarity: 20},
+                    {name: "Crystal Shard", icon: "💠", value: 15, rarity: 15},
+                    {name: "Lucky Charm", icon: "🍀", value: 20, rarity: 10},
+                    {name: "Rare Gem", icon: "💎", value: 30, rarity: 5}
+                ],
+                silver: [
+                    {name: "Silver Blade", icon: "⚔️", value: 15, rarity: 60},
+                    {name: "Magic Scroll", icon: "📜", value: 20, rarity: 55},
+                    {name: "Power Ring", icon: "💍", value: 30, rarity: 50},
+                    {name: "Golden Key", icon: "🔑", value: 40, rarity: 45},
+                    {name: "Ancient Relic", icon: "🏺", value: 60, rarity: 35},
+                    {name: "Dragon Scale", icon: "🐉", value: 80, rarity: 25},
+                    {name: "Phoenix Feather", icon: "🪶", value: 120, rarity: 15},
+                    {name: "Crown Jewel", icon: "👑", value: 180, rarity: 10},
+                    {name: "Mystic Orb", icon: "🔮", value: 250, rarity: 5}
+                ],
+                gold: [
+                    {name: "Golden Armor", icon: "🛡️", value: 80, rarity: 60},
+                    {name: "Enchanted Staff", icon: "🪄", value: 120, rarity: 55},
+                    {name: "Ruby Ring", icon: "💍", value: 180, rarity: 50},
+                    {name: "Legendary Sword", icon: "⚔️", value: 250, rarity: 40},
+                    {name: "Dragon Heart", icon: "❤️", value: 350, rarity: 30},
+                    {name: "Holy Grail", icon: "🏆", value: 500, rarity: 20},
+                    {name: "Time Crystal", icon: "⏰", value: 700, rarity: 12},
+                    {name: "Celestial Wings", icon: "🪽", value: 1000, rarity: 8},
+                    {name: "Infinity Stone", icon: "💠", value: 1500, rarity: 5}
+                ],
+                diamond: [
+                    {name: "Diamond Blade", icon: "💎", value: 150, rarity: 60},
+                    {name: "Platinum Shield", icon: "🛡️", value: 250, rarity: 55},
+                    {name: "Master Crown", icon: "👑", value: 400, rarity: 50},
+                    {name: "Eternal Flame", icon: "🔥", value: 600, rarity: 40},
+                    {name: "Star Fragment", icon: "⭐", value: 900, rarity: 30},
+                    {name: "Moon Crystal", icon: "🌙", value: 1300, rarity: 20},
+                    {name: "Thunder God", icon: "⚡", value: 1800, rarity: 12},
+                    {name: "Universe Key", icon: "🔑", value: 2500, rarity: 8},
+                    {name: "Divine Artifact", icon: "✨", value: 3500, rarity: 5}
+                ],
+                legendary: [
+                    {name: "Legendary Crown", icon: "👑", value: 800, rarity: 60},
+                    {name: "Titan's Hammer", icon: "🔨", value: 1200, rarity: 55},
+                    {name: "God's Blessing", icon: "🙏", value: 2000, rarity: 50},
+                    {name: "Cosmic Power", icon: "🌌", value: 3000, rarity: 40},
+                    {name: "Soul Reaper", icon: "💀", value: 4500, rarity: 30},
+                    {name: "Angel's Grace", icon: "👼", value: 6500, rarity: 20},
+                    {name: "Demon King", icon: "😈", value: 9000, rarity: 12},
+                    {name: "Creation Orb", icon: "🔮", value: 13000, rarity: 8},
+                    {name: "Omega Weapon", icon: "⚔️", value: 20000, rarity: 5}
+                ]
+            },
+
+            init() {
+                this.renderPacks();
+            },
+
+            renderPacks() {
+                const grid = document.getElementById('packsGrid');
+                grid.innerHTML = this.packs.map(pack => `
+                    <div class="pack-card ${pack.tier}" onclick="CardPacksGame.showPackDetails(${pack.id})">
+                        <div class="pack-icon">${pack.icon}</div>
+                        <div class="pack-name">${pack.name}</div>
+                        <div class="pack-price">$${pack.price.toLocaleString()}</div>
+                    </div>
+                `).join('');
+            },
+
+            showPackDetails(packId) {
+                if (this.isOpening) return;
+                
+                this.selectedPack = this.packs.find(p => p.id === packId);
+                if (!this.selectedPack) return;
+
+                document.getElementById('modalPackName').textContent = this.selectedPack.name;
+                
+                const packInfo = document.getElementById('packInfo');
+                packInfo.innerHTML = `
+                    <div class="pack-info-icon">${this.selectedPack.icon}</div>
+                    <div class="pack-info-name">${this.selectedPack.name}</div>
+                    <div class="pack-info-price">$${this.selectedPack.price.toLocaleString()}</div>
+                    <div class="pack-info-description">${this.selectedPack.description}</div>
+                    <div style="font-size: 14px; color: var(--text-tertiary); margin-top: 10px;">
+                        Each pack contains 5 cards • Guaranteed minimum ${(this.selectedPack.price / 6).toFixed(2)} value
+                    </div>
+                `;
+
+                document.getElementById('packModal').classList.add('active');
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
+            },
+
+            closeModal() {
+                document.getElementById('packModal').classList.remove('active');
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
+            },
+
+            async openPacks(count) {
+                if (this.isOpening) return;
+                
+                const balance = getCurrentBalance();
+                const totalCost = this.selectedPack.price * count;
+
+                if (totalCost > balance) {
+                    alert('Insufficient balance!');
+                    if (typeof GameSounds !== 'undefined') GameSounds.ui.error();
+                    return;
+                }
+
+                this.isOpening = true;
+                updateBalance(-totalCost);
+                this.closeModal();
+
+                const allCards = [];
+                for (let i = 0; i < count; i++) {
+                    const packCards = this.generatePackCards();
+                    allCards.push(...packCards);
+                }
+
+                if (typeof GameSounds !== 'undefined') GameSounds.cardpacks.open();
+                await this.revealCards(allCards, totalCost);
+            },
+
+            generatePackCards() {
+                const cards = [];
+                const cardPool = this.cardDatabase[this.selectedPack.tier];
+                const minValue = this.selectedPack.price / 6;
+                
+                for (let i = 0; i < 5; i++) {
+                    const card = this.getRandomCard(cardPool);
+                    cards.push({...card});
+                }
+
+                // Ensure minimum value
+                const totalValue = cards.reduce((sum, c) => sum + c.value, 0);
+                if (totalValue < minValue) {
+                    const deficit = minValue - totalValue;
+                    cards[0].value += deficit;
+                }
+
+                return cards;
+            },
+
+            getRandomCard(pool) {
+                const totalWeight = pool.reduce((sum, card) => sum + card.rarity, 0);
+                let random = Math.random() * totalWeight;
+
+                for (let card of pool) {
+                    if (random < card.rarity) {
+                        return {...card};
+                    }
+                    random -= card.rarity;
+                }
+
+                return {...pool[0]};
+            },
+
+            async revealCards(cards, totalCost) {
+                const overlay = document.getElementById('openingOverlay');
+                const container = document.getElementById('cardsContainer');
+                
+                overlay.classList.add('active');
+                container.innerHTML = '';
+
+                // Show all card backs first
+                cards.forEach((card, index) => {
+                    const isRare = card.rarity <= 10;
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'card-wrapper';
+                    wrapper.innerHTML = `
+                        <div class="card" id="card-${index}">
+                            <div class="card-face card-front">🎴</div>
+                            <div class="card-face card-back ${isRare ? 'rare' : ''}">
+                                <div class="card-image">${card.icon}</div>
+                                <div class="card-name">${card.name}</div>
+                                <div class="card-value">$${card.value.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(wrapper);
+                });
+
+                // Flip cards one by one
+                for (let i = 0; i < cards.length; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 600));
+                    document.getElementById(`card-${i}`).classList.add('flipped');
+                    if (typeof GameSounds !== 'undefined') GameSounds.cardpacks.flip();
+                    
+                    if (cards[i].rarity <= 10) {
+                        if (typeof GameSounds !== 'undefined') GameSounds.cardpacks.rare();
+                    }
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                this.showResults(cards, totalCost);
+            },
+
+            showResults(cards, totalCost) {
+                const totalValue = cards.reduce((sum, c) => sum + c.value, 0);
+                const profit = totalValue - totalCost;
+
+                updateBalance(totalValue);
+
+                const resultDisplay = document.getElementById('resultDisplay');
+                resultDisplay.innerHTML = `
+                    <div class="result-summary">
+                        <div class="result-title">Packs Opened: ${cards.length / 5}</div>
+                        <div class="result-value">Total Value: $${totalValue.toFixed(2)}</div>
+                        <div class="result-profit ${profit >= 0 ? 'profit' : 'loss'}">
+                            ${profit >= 0 ? 'Profit' : 'Loss'}: ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}
+                        </div>
+                    </div>
+                    <button class="close-btn" onclick="CardPacksGame.closeOverlay()">Close</button>
+                `;
+
+                if (currentUser) {
+                    updateGameStats('cardpacks', profit > 0, totalCost, totalValue);
+                }
+
+                if (profit > 0) {
+                    if (typeof GameSounds !== 'undefined') GameSounds.cardpacks.win();
+                }
+            },
+
+            closeOverlay() {
+                document.getElementById('openingOverlay').classList.remove('active');
+                this.isOpening = false;
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
+            }
+        };
+
+        if (typeof currentUser === 'undefined') {
+            let currentUser = null;
+        }
+
+        // Add sound system if not already loaded
+        if (typeof GameSounds === 'undefined') {
+            window.GameSounds = {
+                cardpacks: {
+                    open: () => console.log('Pack opening sound'),
+                    flip: () => console.log('Card flip sound'),
+                    rare: () => console.log('Rare card sound'),
+                    win: () => console.log('Win sound')
+                },
+                ui: {
+                    click: () => {},
+                    error: () => {}
+                }
+            };
+        }
+
+        CardPacksGame.init();
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-// game-sounds.js - Add to public/js/
+// game-sounds.js - Complete version with all game sounds
 // Simple Web Audio API-based sound system
 
 const GameSounds = {
@@ -137,6 +137,55 @@ const GameSounds = {
         }
     },
 
+    // NEW: Roulette sounds
+    roulette: {
+        spin() {
+            // Spinning wheel sound - ascending tones
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    GameSounds.playTone(200 + i * 50, 0.1, 'sine');
+                }, i * 100);
+            }
+        },
+        land() {
+            // Ball landing sound
+            GameSounds.playTone(800, 0.15, 'sine');
+            setTimeout(() => GameSounds.playTone(600, 0.2, 'sine'), 100);
+        },
+        win() {
+            // Winning sound
+            GameSounds.playTone(523, 0.1, 'sine');
+            setTimeout(() => GameSounds.playTone(659, 0.1, 'sine'), 100);
+            setTimeout(() => GameSounds.playTone(784, 0.2, 'sine'), 200);
+        }
+    },
+
+    // NEW: Card packs sounds
+    cardpacks: {
+        open() {
+            // Pack opening sound
+            GameSounds.playTone(400, 0.1, 'sine');
+            setTimeout(() => GameSounds.playTone(600, 0.15, 'sine'), 100);
+        },
+        flip() {
+            // Card flip sound
+            GameSounds.playTone(800, 0.05, 'square');
+            setTimeout(() => GameSounds.playTone(900, 0.05, 'square'), 50);
+        },
+        rare() {
+            // Rare card reveal sound
+            GameSounds.playTone(1000, 0.15, 'sine');
+            setTimeout(() => GameSounds.playTone(1200, 0.15, 'sine'), 100);
+            setTimeout(() => GameSounds.playTone(1500, 0.2, 'sine'), 200);
+        },
+        win() {
+            // Profit sound
+            GameSounds.playTone(659, 0.1, 'sine');
+            setTimeout(() => GameSounds.playTone(784, 0.1, 'sine'), 100);
+            setTimeout(() => GameSounds.playTone(1047, 0.2, 'sine'), 200);
+        }
+    },
+
     ui: {
         click() {
             GameSounds.playTone(600, 0.03, 'square');
@@ -156,30 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     GameSounds.init();
 });
 
-// Example usage in games:
-// Crash game:
-// GameSounds.crash.rise(); // When multiplier increases
-// GameSounds.crash.cashout(); // When cashing out
-// GameSounds.crash.boom(); // When crash happens
-
-// Plinko:
-// GameSounds.plinko.peg(); // Each peg hit
-// GameSounds.plinko.win(); // On win
-// GameSounds.plinko.loss(); // On loss
-
-// Cases:
-// GameSounds.cases.spin(); // When spinning starts
-// GameSounds.cases.reveal(item.rarity); // When item revealed
-
-// Add sound toggle to menu
-// In index.html, add to side menu:
-/*
-<div class="menu-item" onclick="toggleGameSounds()">
-    <span class="menu-icon">🔊</span>
-    <span id="soundToggleText">Sound: ON</span>
-</div>
-*/
-
+// Sound toggle function for menu
 function toggleGameSounds() {
     const enabled = GameSounds.toggle();
     document.getElementById('soundToggleText').textContent = `Sound: ${enabled ? 'ON' : 'OFF'}`;

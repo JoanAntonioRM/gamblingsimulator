@@ -132,6 +132,12 @@ async function navigateTo(page) {
         case 'cases':
             await loadCasesPage(content);
             break;
+        case 'roulette':
+            await loadRoulettePage(content);
+            break;
+        case 'cardpacks':
+            await loadCardPacksPage(content);
+            break;
         case 'crash':
         case 'dice':
         case 'blackjack':
@@ -177,6 +183,14 @@ function loadMainPage(content) {
                     <div class="game-icon">📦</div>
                     <div class="game-title">Cases</div>
                 </div>
+                <div class="game-card" onclick="navigateTo('roulette')">
+                    <div class="game-icon">🎰</div>
+                    <div class="game-title">Roulette</div>
+                </div>
+                <div class="game-card" onclick="navigateTo('cardpacks')">
+                    <div class="game-icon">🎴</div>
+                    <div class="game-title">Card Packs</div>
+                </div>
             </div>
         `;
     } else {
@@ -216,6 +230,14 @@ function loadMainPage(content) {
                 <div class="game-card" onclick="navigateTo('cases')">
                     <div class="game-icon">📦</div>
                     <div class="game-title">Cases</div>
+                </div>
+                <div class="game-card" onclick="navigateTo('roulette')">
+                    <div class="game-icon">🎰</div>
+                    <div class="game-title">Roulette</div>
+                </div>
+                <div class="game-card" onclick="navigateTo('cardpacks')">
+                    <div class="game-icon">🎴</div>
+                    <div class="game-title">Card Packs</div>
                 </div>
             </div>
         `;
@@ -1083,12 +1105,33 @@ function updateThemeUI(theme) {
     }
 }
 
-// NEW: Load cases page
 async function loadCasesPage(content) {
     content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
     
     try {
         const response = await fetch('games/cases.html');
+        const html = await response.text();
+        
+        const gameContainer = document.createElement('div');
+        gameContainer.innerHTML = html;
+        content.appendChild(gameContainer);z
+        
+        const scripts = gameContainer.querySelectorAll('script');
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+        });
+    } catch (error) {
+        content.innerHTML += `<div class="game-container"><h1>Cases game coming soon!</h1></div>`;
+    }
+}
+
+async function loadRoulettePage(content) {
+    content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
+    
+    try {
+        const response = await fetch('games/roulette.html');
         const html = await response.text();
         
         const gameContainer = document.createElement('div');
@@ -1102,6 +1145,42 @@ async function loadCasesPage(content) {
             document.body.appendChild(newScript);
         });
     } catch (error) {
-        content.innerHTML += `<div class="game-container"><h1>Cases game coming soon!</h1></div>`;
+        content.innerHTML += `
+            <div class="game-container">
+                <h1>Loading...</h1>
+                <div style="text-align: center; color: var(--text-secondary); margin: 40px 0;">
+                    <p>Game is loading...</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+async function loadCardPacksPage(content) {
+    content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
+    
+    try {
+        const response = await fetch('games/cardpacks.html');
+        const html = await response.text();
+        
+        const gameContainer = document.createElement('div');
+        gameContainer.innerHTML = html;
+        content.appendChild(gameContainer);
+        
+        const scripts = gameContainer.querySelectorAll('script');
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+        });
+    } catch (error) {
+        content.innerHTML += `
+            <div class="game-container">
+                <h1>Loading...</h1>
+                <div style="text-align: center; color: var(--text-secondary); margin: 40px 0;">
+                    <p>Game is loading...</p>
+                </div>
+            </div>
+        `;
     }
 }

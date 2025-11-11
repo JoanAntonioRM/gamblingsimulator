@@ -855,20 +855,20 @@
                 }, 100);
             },
 
-            showParallelResults(results, totalCost) {
-                const totalWon = results.reduce((sum, item) => sum + item.value, 0);
+            async showParallelResults(allResults, totalCost) {
+                const totalWon = allResults.reduce((sum, item) => sum + item.value, 0);
                 const profit = totalWon - totalCost;
 
                 updateBalance(totalWon);
 
                 if (typeof GameSounds !== 'undefined') {
                     if (profit > 0) {
-                        const hasGold = results.some(r => r.rarity === 'gold');
-                        const hasRed = results.some(r => r.rarity === 'red');
+                        const hasGold = allResults.some(r => r.rarity === 'gold');
+                        const hasRed = allResults.some(r => r.rarity === 'red');
                         if (hasGold) GameSounds.cases.reveal('gold');
                         else if (hasRed) GameSounds.cases.reveal('red');
                         else GameSounds.cases.reveal('blue');
-                    }
+                    }   
                 }
 
                 const resultDisplay = document.getElementById('resultDisplay');
@@ -916,9 +916,21 @@
                     <button class="close-btn" onclick="CasesGame.closeOverlay()">Close</button>
                 `;
 
-                if (currentUser && results.length > 0) {
-                    updateGameStats('cases', profit > 0, totalCost, totalWon);
+                if (currentUser && allResults.length > 0) {
+                    const caseCost = this.selectedCase.price;
+        
+                    // Submit stats for EACH case opened
+                    for (let i = 0; i < allResults.length; i++) {
+                        const caseValue = allResults[i].value;
+                        const caseProfit = caseValue - caseCost;
+                        const caseWon = caseProfit > 0;
+            
+                        // Each call increments the "played" counter by 1
+                        await updateGameStats('cases', caseWon, caseCost, caseValue);
+                    }
                 }
+
+                this.isAnimating = false;
             },
 
             getRandomItem() {
