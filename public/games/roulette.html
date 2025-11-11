@@ -59,6 +59,39 @@
             overflow: hidden;
             background: #1a1a1a;
             box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .wheel-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0% 0%;
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+
+        .wheel-segment-inner {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -100%;
+            left: -100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wheel-number {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .wheel-pointer {
@@ -419,33 +452,51 @@
             ],
 
             init() {
+                this.renderWheel();
                 this.renderBettingTable();
                 this.startTimer();
+            },
+
+            renderWheel() {
+                const wheel = document.getElementById('rouletteWheel');
+                const segmentAngle = 360 / this.numbers.length;
+                
+                this.numbers.forEach((number, index) => {
+                    const segment = document.createElement('div');
+                    segment.className = 'wheel-segment';
+                    segment.style.transform = `rotate(${index * segmentAngle}deg)`;
+                    
+                    const color = number.color === 'green' ? '#2d5016' : 
+                                  number.color === 'red' ? '#c1121f' : '#1a1a1a';
+                    
+                    segment.innerHTML = `
+                        <div class="wheel-segment-inner" style="background: ${color};">
+                            <div class="wheel-number" style="transform: rotate(${-index * segmentAngle + segmentAngle/2}deg);">
+                                ${number.num}
+                            </div>
+                        </div>
+                    `;
+                    
+                    wheel.appendChild(segment);
+                });
             },
 
             renderBettingTable() {
                 const table = document.getElementById('bettingTable');
                 
-                // Create main grid: 0, numbers 1-36, and column bets
                 let html = '<div class="numbers-grid">';
-                
-                // Zero
                 html += `<div class="bet-cell green" onclick="RouletteGame.placeBet('straight', 0)" data-bet-type="inside" style="grid-row: span 3;">0</div>`;
                 
-                // Numbers 1-36 in 3 rows
                 for (let row = 0; row < 3; row++) {
                     for (let col = 1; col <= 12; col++) {
                         const num = (col - 1) * 3 + (3 - row);
                         const color = this.getNumberColor(num);
                         html += `<div class="bet-cell ${color}" onclick="RouletteGame.placeBet('straight', ${num})" data-bet-type="inside">${num}</div>`;
                     }
-                    // Column bet
                     html += `<div class="bet-cell outside-bet column-bet" onclick="RouletteGame.placeBet('column', ${row + 1})" data-bet-type="outside">2:1</div>`;
                 }
                 
                 html += '</div>';
-                
-                // Outside bets (bottom section)
                 html += '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: 10px;">';
                 html += '<div class="bet-cell outside-bet" onclick="RouletteGame.placeBet(\'dozen\', 1)" data-bet-type="outside" style="grid-column: span 2;">1st 12</div>';
                 html += '<div class="bet-cell outside-bet" onclick="RouletteGame.placeBet(\'dozen\', 2)" data-bet-type="outside" style="grid-column: span 2;">2nd 12</div>';
@@ -504,7 +555,6 @@
                 this.totalBet += this.selectedChip;
                 updateBalance(-this.selectedChip);
 
-                // Show chip on table
                 const cell = event.target;
                 let chipDisplay = cell.querySelector('.bet-chip');
                 if (!chipDisplay) {
@@ -579,34 +629,40 @@
 
                 if (typeof GameSounds !== 'undefined') GameSounds.roulette.spin();
 
-                // Spin animation
                 const winningNumber = this.numbers[Math.floor(Math.random() * this.numbers.length)];
                 this.animateSpin(winningNumber);
             },
 
             animateSpin(winningNumber) {
+                const wheel = document.getElementById('rouletteWheel');
                 const ball = document.getElementById('rouletteBall');
-                const radius = 150;
+                
+                const winningIndex = this.numbers.findIndex(n => n.num === winningNumber.num);
+                const segmentAngle = 360 / this.numbers.length;
+                const targetAngle = (winningIndex * segmentAngle) + (segmentAngle / 2);
+                const spins = 5;
+                const totalRotation = (360 * spins) + targetAngle;
+                
+                wheel.style.transform = `rotate(${totalRotation}deg)`;
+                
                 let angle = 0;
                 let speed = 20;
-                let spiralRadius = radius;
+                let radius = 150;
                 
-                const spinInterval = setInterval(() => {
+                const ballInterval = setInterval(() => {
                     angle += speed;
                     speed *= 0.99;
-                    spiralRadius -= 0.3;
                     
-                    const x = 175 + spiralRadius * Math.cos(angle * Math.PI / 180);
-                    const y = 175 + spiralRadius * Math.sin(angle * Math.PI / 180);
+                    if (speed < 0.5) {
+                        clearInterval(ballInterval);
+                        if (typeof GameSounds !== 'undefined') GameSounds.roulette.land();
+                        setTimeout(() => this.showResult(winningNumber), 500);
+                    }
                     
+                    const x = 175 + radius * Math.cos(angle * Math.PI / 180);
+                    const y = 175 + radius * Math.sin(angle * Math.PI / 180);
                     ball.style.left = x + 'px';
                     ball.style.top = y + 'px';
-                    
-                    if (speed < 0.5 || spiralRadius < 50) {
-                        clearInterval(spinInterval);
-                        if (typeof GameSounds !== 'undefined') GameSounds.roulette.land();
-                        this.showResult(winningNumber);
-                    }
                 }, 50);
             },
 
@@ -643,13 +699,21 @@
                 }
 
                 if (currentUser) {
-                    updateGameStats('roulette', profit > 0, this.totalBet, totalWon);
+                    // Win if profit >= 0 (got money back or more)
+                    updateGameStats('roulette', profit >= 0, this.totalBet, totalWon);
                 }
 
                 setTimeout(() => {
                     alert(`Winning Number: ${winningNumber.num} ${winningNumber.color}\n\nTotal Won: $${totalWon.toFixed(2)}\nProfit: ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}`);
                     
                     document.getElementById('winningDisplay').classList.remove('show');
+                    const wheel = document.getElementById('rouletteWheel');
+                    wheel.style.transition = 'none';
+                    wheel.style.transform = 'rotate(0deg)';
+                    setTimeout(() => {
+                        wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+                    }, 50);
+                    
                     this.clearBets();
                     this.isSpinning = false;
                     document.getElementById('spinBtn').disabled = false;
@@ -664,34 +728,24 @@
                 switch(bet.type) {
                     case 'straight':
                         return bet.value === num ? bet.amount * 36 : 0;
-                    
                     case 'color':
                         return bet.value === color ? bet.amount * 2 : 0;
-                    
                     case 'even':
                         return num !== 0 && num % 2 === 0 ? bet.amount * 2 : 0;
-                    
                     case 'odd':
                         return num !== 0 && num % 2 === 1 ? bet.amount * 2 : 0;
-                    
                     case 'half':
                         if (bet.value === 1) return num >= 1 && num <= 18 ? bet.amount * 2 : 0;
                         return num >= 19 && num <= 36 ? bet.amount * 2 : 0;
-                    
                     case 'dozen':
                         const start = (bet.value - 1) * 12 + 1;
                         return num >= start && num < start + 12 ? bet.amount * 3 : 0;
-                    
                     case 'column':
-                        const col = bet.value;
-                        const inColumn = [1,2,3].map(row => (row - 1) * 12 + (4 - col) + (col === 1 ? 0 : col === 2 ? 1 : 2));
-                        // Column calculation fix
                         const columnNums = [];
                         for (let i = 0; i < 12; i++) {
-                            columnNums.push((i * 3) + (4 - col));
+                            columnNums.push((i * 3) + (4 - bet.value));
                         }
                         return columnNums.includes(num) ? bet.amount * 3 : 0;
-                    
                     default:
                         return 0;
                 }

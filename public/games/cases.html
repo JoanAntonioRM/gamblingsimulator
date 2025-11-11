@@ -856,9 +856,11 @@
             },
 
             async showParallelResults(allResults, totalCost) {
-                const totalWon = allResults.reduce((sum, item) => sum + item.value, 0);
-                const profit = totalWon - totalCost;
-
+                // Calculate total value from all items
+                const totalWon = allResults.reduce((sum, r) => sum + r.value, 0);
+                const totalBet = totalCost;
+                const profit = totalWon - totalBet;
+                
                 updateBalance(totalWon);
 
                 if (typeof GameSounds !== 'undefined') {
@@ -870,17 +872,17 @@
                         else GameSounds.cases.reveal('blue');
                     }   
                 }
-
+    
                 const resultDisplay = document.getElementById('resultDisplay');
-
+    
                 const itemsByRarity = {};
-                results.forEach(item => {
+                allResults.forEach(item => {
                     if (!itemsByRarity[item.rarity]) {
                         itemsByRarity[item.rarity] = [];
                     }
                     itemsByRarity[item.rarity].push(item);
                 });
-
+    
                 const itemsHTML = Object.entries(itemsByRarity).map(([rarity, items]) => `
                     <div style="margin-bottom: 15px;">
                         <h3 style="font-size: 14px; color: ${this.getRarityColor(rarity)}; margin-bottom: 10px;">
@@ -893,29 +895,29 @@
                                     <div style="font-size: 32px;">${item.icon}</div>
                                     <div style="font-size: 11px; color: white; margin-top: 5px;">${item.name}</div>
                                     <div style="font-size: 13px; font-weight: bold; color: #fbbf24; margin-top: 3px;">
-                                        ${item.value.toLocaleString()}
+                                        $${item.value.toLocaleString()}
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                 `).join('');
-
+    
                 resultDisplay.innerHTML = `
-                    <h2 style="font-size: 28px; margin-bottom: 15px; color: white;">Cases Opened: ${results.length}</h2>
+                    <h2 style="font-size: 28px; margin-bottom: 15px; color: white;">Cases Opened: ${allResults.length}</h2>
                     <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding: 15px; 
                                 background: rgba(0,0,0,0.3); border-radius: 12px;">
                         ${itemsHTML}
                     </div>
                     <div style="font-size: 22px; margin-bottom: 10px; color: white;">
-                        Total Value: <span style="color: #fbbf24;">${totalWon.toLocaleString()}</span>
+                        Total Value: <span style="color: #fbbf24;">$${totalWon.toLocaleString()}</span>
                     </div>
                     <div class="result-profit ${profit >= 0 ? 'profit' : 'loss'}">
-                        ${profit >= 0 ? 'Profit' : 'Loss'}: ${profit >= 0 ? '+' : ''}${Math.abs(profit).toLocaleString()}
+                        ${profit >= 0 ? 'Profit' : 'Loss'}: ${profit >= 0 ? '+' : ''}$${Math.abs(profit).toLocaleString()}
                     </div>
                     <button class="close-btn" onclick="CasesGame.closeOverlay()">Close</button>
                 `;
-
+    
                 if (currentUser && allResults.length > 0) {
                     const caseCost = this.selectedCase.price;
         
@@ -929,7 +931,7 @@
                         await updateGameStats('cases', caseWon, caseCost, caseValue);
                     }
                 }
-
+    
                 this.isAnimating = false;
             },
 

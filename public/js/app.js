@@ -283,6 +283,7 @@ async function loadUserPage(content) {
     }
     
     const actualProfit = currentUser.totalWon - currentUser.totalBet;
+    const actualLoss = currentUser.totalBet - currentUser.totalWon; // FIXED: Correct loss calculation
     const totalGamesPlayed = Object.values(currentUser.games).reduce((sum, game) => sum + game.played, 0);
     const totalWins = Object.values(currentUser.games).reduce((sum, game) => sum + game.won, 0);
     const totalLosses = Object.values(currentUser.games).reduce((sum, game) => sum + game.lost, 0);
@@ -309,7 +310,7 @@ async function loadUserPage(content) {
                     </div>
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Lost</div>
-                        <div class="stat-detail-value negative">-$${(currentUser.totalBet - currentUser.totalWon + actualProfit).toFixed(0)}</div>
+                        <div class="stat-detail-value negative">-$${Math.max(0, actualLoss).toFixed(0)}</div>
                     </div>
                 </div>
             </div>
@@ -328,7 +329,16 @@ async function loadUserPage(content) {
                 </div>
             </div>
             ${Object.entries(currentUser.games).map(([game, stats]) => {
-                const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎', cases: '📦', roulette: '🛞', cardpacks: '🃏' };
+                const icons = { 
+                    crash: '🚀', 
+                    dice: '🎲', 
+                    blackjack: '🃏', 
+                    plinko: '🎯', 
+                    mines: '💎', 
+                    cases: '📦', 
+                    roulette: '🛞', 
+                    cardpacks: '🎴' 
+                };
                 return `
                     <div class="stat-card">
                         <div class="stat-value">${stats.played}</div>
@@ -475,7 +485,7 @@ function loadShopPage(content) {
 }
 
 async function loadLeaderboardPage(content) {
-    const games = ['xp', 'crash', 'dice', 'blackjack', 'plinko', 'mines', 'cases'];
+    const games = ['xp', 'crash', 'dice', 'blackjack', 'plinko', 'mines', 'cases', 'roulette', 'cardpacks'];
     const icons = { 
         xp: '🏆',
         crash: '🚀', 
@@ -483,7 +493,9 @@ async function loadLeaderboardPage(content) {
         blackjack: '🃏', 
         plinko: '🎯', 
         mines: '💎',
-        cases: '📦'
+        cases: '📦',
+        roulette: '🛞',
+        cardpacks: '🎴'
     };
     const names = {
         xp: 'XP Rankings',
@@ -492,7 +504,9 @@ async function loadLeaderboardPage(content) {
         blackjack: 'Blackjack',
         plinko: 'Plinko',
         mines: 'Mines',
-        cases: 'Cases'
+        cases: 'Cases',
+        roulette: 'Roulette',
+        cardpacks: 'Card Packs'
     };
     
     content.innerHTML = `
@@ -510,7 +524,7 @@ async function loadLeaderboardPage(content) {
     `).join('');
     
     document.getElementById('leaderboardTabs').innerHTML = tabsHTML;
-    await Leaderboard.showGame('xp'); // Default to XP
+    await Leaderboard.showGame('xp');
 }
 
 async function loadGamePage(content, game) {
@@ -1013,7 +1027,9 @@ const Leaderboard = {
                 blackjack: '🃏', 
                 plinko: '🎯', 
                 mines: '💎',
-                cases: '📦'
+                cases: '📦',
+                roulette: '🛞',
+                cardpacks: '🎴'
             };
             
             const names = {
@@ -1023,7 +1039,9 @@ const Leaderboard = {
                 blackjack: 'Blackjack',
                 plinko: 'Plinko',
                 mines: 'Mines',
-                cases: 'Cases'
+                cases: 'Cases',
+                roulette: 'Roulette',
+                cardpacks: 'Card Packs'
             };
             
             let html = `<h2>${icons[game]} ${names[game]} Leaderboard</h2>`;
@@ -1046,14 +1064,14 @@ const Leaderboard = {
                         `;
                     });
                 } else {
-                    const isCases = game === 'cases';
+                    const isProfitBased = game === 'cases' || game === 'cardpacks';
                     leaderboard.forEach((user, index) => {
                         const isCurrentUser = currentUser && user.username === currentUser.username;
-                        const displayValue = isCases 
-                            ? `$${parseFloat(user.total_profit).toFixed(0)} profit`
+                        const displayValue = isProfitBased 
+                            ? `$${parseFloat(user.total_profit).toFixed(0)} ${parseFloat(user.total_profit) >= 0 ? 'profit' : 'loss'}`
                             : `${user.won} wins`;
                         
-                        const valueColor = isCases 
+                        const valueColor = isProfitBased 
                             ? (parseFloat(user.total_profit) >= 0 ? '#22c55e' : '#ef4444')
                             : '#22c55e';
                         
@@ -1113,7 +1131,7 @@ async function loadCasesPage(content) {
         
         const gameContainer = document.createElement('div');
         gameContainer.innerHTML = html;
-        content.appendChild(gameContainer);z
+        content.appendChild(gameContainer);
         
         const scripts = gameContainer.querySelectorAll('script');
         scripts.forEach(script => {

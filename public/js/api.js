@@ -1,4 +1,4 @@
-// Updated api.js - Add this method to the API object
+// Updated api.js - Add cardpacks and roulette support
 
 const API = {
     BASE_URL: 'https://2fzd4f73n1.execute-api.us-east-2.amazonaws.com/api',
@@ -134,7 +134,6 @@ const API = {
         return await this.request(`/leaderboard/${game}`);
     },
     
-    // NEW: XP Leaderboard endpoint
     async getXPLeaderboard() {
         return await this.request('/leaderboard/xp');
     },

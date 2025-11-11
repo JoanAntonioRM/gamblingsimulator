@@ -376,6 +376,7 @@
         const CardPacksGame = {
             selectedPack: null,
             isOpening: false,
+            lastResults: null,
             
             packs: [
                 {
@@ -420,62 +421,63 @@
                 }
             ],
 
+            // FIXED: Lower values and adjusted rarities for more losses
             cardDatabase: {
                 bronze: [
-                    {name: "Common Starter", icon: "🌱", value: 1, rarity: 60},
-                    {name: "Basic Shield", icon: "🛡️", value: 2, rarity: 55},
-                    {name: "Wooden Sword", icon: "🗡️", value: 3, rarity: 50},
-                    {name: "Training Boots", icon: "👟", value: 4, rarity: 45},
-                    {name: "Health Potion", icon: "🧪", value: 5, rarity: 40},
-                    {name: "Bronze Coin", icon: "🪙", value: 8, rarity: 30},
-                    {name: "Magic Book", icon: "📖", value: 12, rarity: 20},
-                    {name: "Crystal Shard", icon: "💠", value: 15, rarity: 15},
-                    {name: "Lucky Charm", icon: "🍀", value: 20, rarity: 10},
-                    {name: "Rare Gem", icon: "💎", value: 30, rarity: 5}
+                    {name: "Common Starter", icon: "🌱", value: 0.5, rarity: 70},
+                    {name: "Basic Shield", icon: "🛡️", value: 1, rarity: 65},
+                    {name: "Wooden Sword", icon: "🗡️", value: 1.5, rarity: 60},
+                    {name: "Training Boots", icon: "👟", value: 2, rarity: 55},
+                    {name: "Health Potion", icon: "🧪", value: 3, rarity: 45},
+                    {name: "Bronze Coin", icon: "🪙", value: 5, rarity: 30},
+                    {name: "Magic Book", icon: "📖", value: 8, rarity: 20},
+                    {name: "Crystal Shard", icon: "💠", value: 12, rarity: 10},
+                    {name: "Lucky Charm", icon: "🍀", value: 18, rarity: 5},
+                    {name: "Rare Gem", icon: "💎", value: 25, rarity: 2}
                 ],
                 silver: [
-                    {name: "Silver Blade", icon: "⚔️", value: 15, rarity: 60},
-                    {name: "Magic Scroll", icon: "📜", value: 20, rarity: 55},
-                    {name: "Power Ring", icon: "💍", value: 30, rarity: 50},
-                    {name: "Golden Key", icon: "🔑", value: 40, rarity: 45},
-                    {name: "Ancient Relic", icon: "🏺", value: 60, rarity: 35},
-                    {name: "Dragon Scale", icon: "🐉", value: 80, rarity: 25},
-                    {name: "Phoenix Feather", icon: "🪶", value: 120, rarity: 15},
-                    {name: "Crown Jewel", icon: "👑", value: 180, rarity: 10},
-                    {name: "Mystic Orb", icon: "🔮", value: 250, rarity: 5}
+                    {name: "Silver Blade", icon: "⚔️", value: 8, rarity: 70},
+                    {name: "Magic Scroll", icon: "📜", value: 12, rarity: 65},
+                    {name: "Power Ring", icon: "💍", value: 18, rarity: 60},
+                    {name: "Golden Key", icon: "🔑", value: 25, rarity: 50},
+                    {name: "Ancient Relic", icon: "🏺", value: 40, rarity: 35},
+                    {name: "Dragon Scale", icon: "🐉", value: 60, rarity: 20},
+                    {name: "Phoenix Feather", icon: "🪶", value: 90, rarity: 10},
+                    {name: "Crown Jewel", icon: "👑", value: 140, rarity: 5},
+                    {name: "Mystic Orb", icon: "🔮", value: 200, rarity: 2}
                 ],
                 gold: [
-                    {name: "Golden Armor", icon: "🛡️", value: 80, rarity: 60},
-                    {name: "Enchanted Staff", icon: "🪄", value: 120, rarity: 55},
-                    {name: "Ruby Ring", icon: "💍", value: 180, rarity: 50},
-                    {name: "Legendary Sword", icon: "⚔️", value: 250, rarity: 40},
-                    {name: "Dragon Heart", icon: "❤️", value: 350, rarity: 30},
-                    {name: "Holy Grail", icon: "🏆", value: 500, rarity: 20},
-                    {name: "Time Crystal", icon: "⏰", value: 700, rarity: 12},
-                    {name: "Celestial Wings", icon: "🪽", value: 1000, rarity: 8},
-                    {name: "Infinity Stone", icon: "💠", value: 1500, rarity: 5}
+                    {name: "Golden Armor", icon: "🛡️", value: 50, rarity: 70},
+                    {name: "Enchanted Staff", icon: "🪄", value: 80, rarity: 65},
+                    {name: "Ruby Ring", icon: "💍", value: 120, rarity: 55},
+                    {name: "Legendary Sword", icon: "⚔️", value: 180, rarity: 40},
+                    {name: "Dragon Heart", icon: "❤️", value: 280, rarity: 25},
+                    {name: "Holy Grail", icon: "🏆", value: 400, rarity: 15},
+                    {name: "Time Crystal", icon: "⏰", value: 600, rarity: 8},
+                    {name: "Celestial Wings", icon: "🪽", value: 900, rarity: 4},
+                    {name: "Infinity Stone", icon: "💠", value: 1300, rarity: 2}
                 ],
                 diamond: [
-                    {name: "Diamond Blade", icon: "💎", value: 150, rarity: 60},
-                    {name: "Platinum Shield", icon: "🛡️", value: 250, rarity: 55},
-                    {name: "Master Crown", icon: "👑", value: 400, rarity: 50},
-                    {name: "Eternal Flame", icon: "🔥", value: 600, rarity: 40},
-                    {name: "Star Fragment", icon: "⭐", value: 900, rarity: 30},
-                    {name: "Moon Crystal", icon: "🌙", value: 1300, rarity: 20},
-                    {name: "Thunder God", icon: "⚡", value: 1800, rarity: 12},
-                    {name: "Universe Key", icon: "🔑", value: 2500, rarity: 8},
-                    {name: "Divine Artifact", icon: "✨", value: 3500, rarity: 5}
+                    {name: "Diamond Blade", icon: "💎", value: 100, rarity: 70},
+                    {name: "Platinum Shield", icon: "🛡️", value: 180, rarity: 65},
+                    {name: "Master Crown", icon: "👑", value: 300, rarity: 55},
+                    {name: "Eternal Flame", icon: "🔥", value: 480, rarity: 40},
+                    {name: "Star Fragment", icon: "⭐", value: 720, rarity: 25},
+                    {name: "Moon Crystal", icon: "🌙", value: 1100, rarity: 15},
+                    {name: "Thunder God", icon: "⚡", value: 1600, rarity: 8},
+                    {name: "Universe Key", icon: "🔑", value: 2300, rarity: 4},
+                    {name: "Divine Artifact", icon: "✨", value: 3200, rarity: 2}
                 ],
                 legendary: [
-                    {name: "Legendary Crown", icon: "👑", value: 800, rarity: 60},
-                    {name: "Titan's Hammer", icon: "🔨", value: 1200, rarity: 55},
-                    {name: "God's Blessing", icon: "🙏", value: 2000, rarity: 50},
-                    {name: "Cosmic Power", icon: "🌌", value: 3000, rarity: 40},
-                    {name: "Soul Reaper", icon: "💀", value: 4500, rarity: 30},
-                    {name: "Angel's Grace", icon: "👼", value: 6500, rarity: 20},
-                    {name: "Demon King", icon: "😈", value: 9000, rarity: 12},
-                    {name: "Creation Orb", icon: "🔮", value: 13000, rarity: 8},
-                    {name: "Omega Weapon", icon: "⚔️", value: 20000, rarity: 5}
+                    {name: "Legendary Crown", icon: "👑", value: 600, rarity: 70},
+                    {name: "Titan's Hammer", icon: "🔨", value: 1000, rarity: 65},
+                    {name: "God's Blessing", icon: "🙏", value: 1600, rarity: 55},
+                    {name: "Cosmic Power", icon: "🌌", value: 2500, rarity: 40},
+                    {name: "Soul Reaper", icon: "💀", value: 3800, rarity: 25},
+                    {name: "Angel's Grace", icon: "👼", value: 5500, rarity: 15},
+                    {name: "Demon King", icon: "😈", value: 8000, rarity: 8},
+                    {name: "Creation Orb", icon: "🔮", value: 11500, rarity: 4},
+                    {name: "Omega Weapon", icon: "⚔️", value: 16000, rarity: 2}
                 ]
             },
 
@@ -509,7 +511,7 @@
                     <div class="pack-info-price">$${this.selectedPack.price.toLocaleString()}</div>
                     <div class="pack-info-description">${this.selectedPack.description}</div>
                     <div style="font-size: 14px; color: var(--text-tertiary); margin-top: 10px;">
-                        Each pack contains 5 cards • Guaranteed minimum ${(this.selectedPack.price / 6).toFixed(2)} value
+                        Each pack contains 5 cards with varying values
                     </div>
                 `;
 
@@ -544,6 +546,9 @@
                     allCards.push(...packCards);
                 }
 
+                // Store results to prevent showing old results next time
+                this.lastResults = allCards;
+
                 if (typeof GameSounds !== 'undefined') GameSounds.cardpacks.open();
                 await this.revealCards(allCards, totalCost);
             },
@@ -551,20 +556,13 @@
             generatePackCards() {
                 const cards = [];
                 const cardPool = this.cardDatabase[this.selectedPack.tier];
-                const minValue = this.selectedPack.price / 6;
                 
                 for (let i = 0; i < 5; i++) {
                     const card = this.getRandomCard(cardPool);
                     cards.push({...card});
                 }
 
-                // Ensure minimum value
-                const totalValue = cards.reduce((sum, c) => sum + c.value, 0);
-                if (totalValue < minValue) {
-                    const deficit = minValue - totalValue;
-                    cards[0].value += deficit;
-                }
-
+                // NO MINIMUM VALUE - let players lose!
                 return cards;
             },
 
@@ -586,8 +584,11 @@
                 const overlay = document.getElementById('openingOverlay');
                 const container = document.getElementById('cardsContainer');
                 
-                overlay.classList.add('active');
+                // CLEAR OLD RESULTS
                 container.innerHTML = '';
+                document.getElementById('resultDisplay').innerHTML = '';
+                
+                overlay.classList.add('active');
 
                 // Show all card backs first
                 cards.forEach((card, index) => {
@@ -650,7 +651,13 @@
             },
 
             closeOverlay() {
-                document.getElementById('openingOverlay').classList.remove('active');
+                const overlay = document.getElementById('openingOverlay');
+                overlay.classList.remove('active');
+                
+                // Clear the containers
+                document.getElementById('cardsContainer').innerHTML = '';
+                document.getElementById('resultDisplay').innerHTML = '';
+                
                 this.isOpening = false;
                 if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
             }
@@ -660,7 +667,6 @@
             let currentUser = null;
         }
 
-        // Add sound system if not already loaded
         if (typeof GameSounds === 'undefined') {
             window.GameSounds = {
                 cardpacks: {
