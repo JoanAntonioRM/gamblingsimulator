@@ -184,7 +184,7 @@ function loadMainPage(content) {
                     <div class="game-title">Cases</div>
                 </div>
                 <div class="game-card" onclick="navigateTo('roulette')">
-                    <div class="game-icon">🎰</div>
+                    <div class="game-icon">🛞</div>
                     <div class="game-title">Roulette</div>
                 </div>
                 <div class="game-card" onclick="navigateTo('cardpacks')">
@@ -232,7 +232,7 @@ function loadMainPage(content) {
                     <div class="game-title">Cases</div>
                 </div>
                 <div class="game-card" onclick="navigateTo('roulette')">
-                    <div class="game-icon">🎰</div>
+                    <div class="game-icon">🛞</div>
                     <div class="game-title">Roulette</div>
                 </div>
                 <div class="game-card" onclick="navigateTo('cardpacks')">
@@ -282,7 +282,6 @@ async function loadUserPage(content) {
         console.error('Failed to refresh user data:', error);
     }
     
-    // FIXED: Calculate actual profit correctly
     const actualProfit = currentUser.totalWon - currentUser.totalBet;
     const totalGamesPlayed = Object.values(currentUser.games).reduce((sum, game) => sum + game.played, 0);
     const totalWins = Object.values(currentUser.games).reduce((sum, game) => sum + game.won, 0);
@@ -329,7 +328,7 @@ async function loadUserPage(content) {
                 </div>
             </div>
             ${Object.entries(currentUser.games).map(([game, stats]) => {
-                const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎', cases: '📦' };
+                const icons = { crash: '🚀', dice: '🎲', blackjack: '🃏', plinko: '🎯', mines: '💎', cases: '📦', roulette: '🛞', cardpacks: '🃏' };
                 return `
                     <div class="stat-card">
                         <div class="stat-value">${stats.played}</div>
