@@ -33,7 +33,7 @@ function showLoadingWarning() {
     message.innerHTML = '⚠️ If things don\'t load properly, please refresh the page';
     document.body.appendChild(message);
     
-    setTimeout(() => message.remove(), 8000);
+    setTimeout(() => message.remove(), 5000);
 }
 
 async function initializeApp() {
