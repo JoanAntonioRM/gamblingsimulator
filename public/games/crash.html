@@ -369,6 +369,8 @@
                 const autoCashout = parseFloat(document.getElementById('autoCashout').value);
                 this.autoCashoutValue = autoCashout > 1 ? autoCashout : null;
 
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
+
                 this.startGame();
             },
 
@@ -393,6 +395,9 @@
                 statusEl.textContent = '🚀 Rocket is flying!';
 
                 this.animationInterval = setInterval(() => {
+                    if (this.multiplier % 0.50 === 0) { // Play sound every 0.5x
+                        if (typeof GameSounds !== 'undefined') GameSounds.crash.rise();
+                    }
                     if (this.multiplier >= this.crashPoint) {
                         this.crash();
                     } else {
@@ -416,6 +421,7 @@
                 if (!this.isRunning || this.hasCashedOut) return;
 
                 this.hasCashedOut = true;
+                if (typeof GameSounds !== 'undefined') GameSounds.crash.cashout();
                 this.cashoutMultiplier = this.multiplier;
                 const winAmount = this.currentBet * this.multiplier;
                 const profit = winAmount - this.currentBet;
@@ -439,6 +445,7 @@
             },
 
             crash() {
+                if (typeof GameSounds !== 'undefined') GameSounds.crash.boom();
                 clearInterval(this.animationInterval);
                 this.isRunning = false;
 

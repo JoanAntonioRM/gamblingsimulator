@@ -415,6 +415,7 @@
             },
 
             setMode(mode) {
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
                 if (this.isRolling) return;
                 this.mode = mode;
                 document.getElementById('rollOverBtn').classList.toggle('active', mode === 'over');
@@ -509,6 +510,7 @@
 
                 this.lastBet = betAmount;
                 this.isRolling = true;
+                if (typeof GameSounds !== 'undefined') GameSounds.dice.roll();
                 updateBalance(-betAmount);
 
                 document.getElementById('rollBtn').disabled = true;
@@ -560,6 +562,7 @@
                 const profit = won ? winAmount - betAmount : -betAmount;
 
                 if (won) {
+                    if (typeof GameSounds !== 'undefined') GameSounds.dice.win();
                     updateBalance(winAmount);
                     resultDisplay.innerHTML = `
                         <div class="dice-result-number win">${rolledNumber.toFixed(2)}</div>
@@ -572,6 +575,7 @@
                         updateGameStats('dice', true, betAmount, winAmount);
                     }
                 } else {
+                    if (typeof GameSounds !== 'undefined') GameSounds.dice.loss();
                     resultDisplay.innerHTML = `
                         <div class="dice-result-number loss">${rolledNumber.toFixed(2)}</div>
                         <div class="dice-result-text" style="color: #ef4444;">

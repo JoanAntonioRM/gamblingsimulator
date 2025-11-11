@@ -577,6 +577,7 @@
 
                 this.lastBet = betAmount;
                 this.isDropping = true;
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
                 this.results = [];
                 updateBalance(-totalBet);
 
@@ -668,6 +669,9 @@
             animateBallFast(ball, path, betAmount) {
                 let step = 0;
                 const dropInterval = setInterval(() => {
+                    if (step % 3 === 0) { // Play sound every 3 steps
+                        if (typeof GameSounds !== 'undefined') GameSounds.plinko.peg();
+                    }
                     if (step >= this.rows) {
                         clearInterval(dropInterval);
                         
@@ -725,6 +729,12 @@
                 if (currentUser && this.results.length > 0) {
                     const won = profit > 0;
                     updateGameStats('plinko', won, totalBet, totalWon);
+                }
+
+                if (profit >= 0) {
+                    if (typeof GameSounds !== 'undefined') GameSounds.plinko.win();
+                } else {
+                    if (typeof GameSounds !== 'undefined') GameSounds.plinko.loss();
                 }
 
                 setTimeout(() => {

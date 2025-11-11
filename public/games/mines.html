@@ -416,6 +416,7 @@
                 this.currentBet = betAmount;
                 this.lastBet = betAmount;
                 this.gameActive = true;
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.click();
                 this.revealedTiles = 0;
                 this.currentMultiplier = 1.00;
 
@@ -447,17 +448,20 @@
                 if (tile.classList.contains('revealed')) return;
 
                 tile.classList.add('revealed');
+                if (typeof GameSounds !== 'undefined') GameSounds.mines.reveal();
 
                 if (this.minePositions.includes(index)) {
                     // Hit a mine!
                     tile.classList.add('mine');
                     tile.textContent = '💣';
                     this.gameOver(false);
+                    if (typeof GameSounds !== 'undefined') GameSounds.mines.explosion();
                 } else {
                     // Found a gem!
                     tile.classList.add('gem');
                     tile.textContent = '💎';
                     this.revealedTiles++;
+                    if (typeof GameSounds !== 'undefined') GameSounds.mines.gem();
                     this.calculateMultiplier();
                     this.updateStats();
                 }
@@ -501,6 +505,7 @@
             },
 
             cashout() {
+                if (typeof GameSounds !== 'undefined') GameSounds.ui.success();
                 if (!this.gameActive) return;
                 this.gameOver(true);
             },

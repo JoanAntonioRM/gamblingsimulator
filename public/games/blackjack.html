@@ -418,6 +418,7 @@
                 this.playerHand.push(this.deck.pop());
                 this.dealerHoleCard = this.deck.pop();
                 this.dealerHand.push(this.dealerHoleCard);
+                if (typeof GameSounds !== 'undefined') GameSounds.blackjack.deal();
 
                 this.renderHands();
                 this.updateUI();
@@ -445,6 +446,7 @@
 
             hit() {
                 this.playerHand.push(this.deck.pop());
+                if (typeof GameSounds !== 'undefined') GameSounds.blackjack.deal();
                 this.renderHands();
                 this.updateUI();
 
@@ -628,6 +630,7 @@
                         if (currentUser) updateGameStats('blackjack', true, this.currentBet, blackjackWin);
                         break;
                     case 'win':
+                        if (typeof GameSounds !== 'undefined') GameSounds.blackjack.win();
                         const winAmount = this.currentBet * 2;
                         updateBalance(winAmount);
                         statusEl.textContent = `🎉 You Win! +$${winAmount.toFixed(2)}`;
@@ -640,6 +643,7 @@
                         if (currentUser) updateGameStats('blackjack', false, this.currentBet, 0);
                         break;
                     case 'bust':
+                        if (typeof GameSounds !== 'undefined') GameSounds.blackjack.bust();
                         statusEl.textContent = `💥 Bust! You Lose -$${this.currentBet.toFixed(2)}`;
                         statusEl.className = 'game-status loss';
                         if (currentUser) updateGameStats('blackjack', false, this.currentBet, 0);
