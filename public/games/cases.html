@@ -856,7 +856,8 @@
             },
 
             async showParallelResults(allResults, totalCost) {
-                const totalWon = allResults.reduce((sum, r) => sum + (r.betAmount * r.multiplier), 0);
+                // Calculate total value from all items
+                const totalWon = allResults.reduce((sum, r) => sum + r.value, 0);
                 const totalBet = totalCost;
                 const profit = totalWon - totalBet;
                 
