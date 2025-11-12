@@ -282,8 +282,9 @@ async function loadUserPage(content) {
         console.error('Failed to refresh user data:', error);
     }
     
+    // FIXED: Calculate actual profit and loss correctly
     const actualProfit = currentUser.totalWon - currentUser.totalBet;
-    const actualLoss = currentUser.totalBet - currentUser.totalWon; // FIXED: Correct loss calculation
+    const actualLoss = currentUser.totalBet - currentUser.totalWon;
     const totalGamesPlayed = Object.values(currentUser.games).reduce((sum, game) => sum + game.played, 0);
     const totalWins = Object.values(currentUser.games).reduce((sum, game) => sum + game.won, 0);
     const totalLosses = Object.values(currentUser.games).reduce((sum, game) => sum + game.lost, 0);
@@ -310,7 +311,7 @@ async function loadUserPage(content) {
                     </div>
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Lost</div>
-                        <div class="stat-detail-value negative">-$${Math.max(0, actualLoss).toFixed(0)}</div>
+                        <div class="stat-detail-value negative">-$${actualLoss > 0 ? actualLoss.toFixed(0) : '0'}</div>
                     </div>
                 </div>
             </div>
