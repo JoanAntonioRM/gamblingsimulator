@@ -311,7 +311,7 @@ async function loadUserPage(content) {
                     </div>
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Lost</div>
-                        <div class="stat-detail-value negative">-$${actualLoss > 0 ? actualLoss.toFixed(0) : '0'}</div>
+                        <div class="stat-detail-value negative">-$${Math.abs(actualLoss).toFixed(0)}</div>
                     </div>
                 </div>
             </div>
