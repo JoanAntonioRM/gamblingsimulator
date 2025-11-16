@@ -273,6 +273,13 @@ function loadLoginPage(content) {
     `;
 }
 
+function formatMoney(amount) {
+    return amount.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+}
+
 async function loadUserPage(content) {
     if (!currentUser) return;
     
@@ -282,9 +289,7 @@ async function loadUserPage(content) {
         console.error('Failed to refresh user data:', error);
     }
     
-    // CORRECT CALCULATION:
-    // Net Profit = Total Won - Total Lost
-    // Total Lost is what the user actually lost (not total bet)
+    // Correct calculation: Net Profit = Total Won - Total Lost
     const totalWon = parseFloat(currentUser.totalWon);
     const totalLost = parseFloat(currentUser.totalLost);
     const netProfit = totalWon - totalLost;
@@ -300,36 +305,42 @@ async function loadUserPage(content) {
         </div>
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value">$${currentUser.totalBet.toFixed(0)}</div>
+                <div class="stat-value" style="font-size: clamp(18px, 3vw, 30px); word-break: break-word;">
+                    $${formatMoney(currentUser.totalBet)}
+                </div>
                 <div class="stat-label">Total Bet</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" style="color: ${netProfit >= 0 ? '#22c55e' : '#ef4444'}">
-                    ${netProfit >= 0 ? '+' : ''}$${netProfit.toFixed(0)}
+                <div class="stat-value" style="color: ${netProfit >= 0 ? '#22c55e' : '#ef4444'}; font-size: clamp(18px, 3vw, 30px); word-break: break-word;">
+                    ${netProfit >= 0 ? '+' : ''}$${formatMoney(Math.abs(netProfit))}
                 </div>
                 <div class="stat-label">Net Profit</div>
                 <div class="stat-details">
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Won</div>
-                        <div class="stat-detail-value positive">+$${totalWon.toFixed(0)}</div>
+                        <div class="stat-detail-value positive" style="font-size: clamp(10px, 2vw, 14px);">
+                            +$${formatMoney(totalWon)}
+                        </div>
                     </div>
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Lost</div>
-                        <div class="stat-detail-value negative">-$${totalLost.toFixed(0)}</div>
+                        <div class="stat-detail-value negative" style="font-size: clamp(10px, 2vw, 14px);">
+                            -$${formatMoney(totalLost)}
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">${totalGamesPlayed}</div>
+                <div class="stat-value" style="font-size: clamp(18px, 3vw, 30px);">${totalGamesPlayed.toLocaleString()}</div>
                 <div class="stat-label">Games Played</div>
                 <div class="stat-details">
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Won</div>
-                        <div class="stat-detail-value positive">${totalWins}</div>
+                        <div class="stat-detail-value positive">${totalWins.toLocaleString()}</div>
                     </div>
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Lost</div>
-                        <div class="stat-detail-value negative">${totalLosses}</div>
+                        <div class="stat-detail-value negative">${totalLosses.toLocaleString()}</div>
                     </div>
                 </div>
             </div>
@@ -346,16 +357,16 @@ async function loadUserPage(content) {
                 };
                 return `
                     <div class="stat-card">
-                        <div class="stat-value">${stats.played}</div>
+                        <div class="stat-value" style="font-size: clamp(18px, 3vw, 30px);">${stats.played.toLocaleString()}</div>
                         <div class="stat-label">${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)} Games</div>
                         <div class="stat-details">
                             <div class="stat-detail-item">
                                 <div class="stat-detail-label">W</div>
-                                <div class="stat-detail-value positive">${stats.won}</div>
+                                <div class="stat-detail-value positive">${stats.won.toLocaleString()}</div>
                             </div>
                             <div class="stat-detail-item">
                                 <div class="stat-detail-label">L</div>
-                                <div class="stat-detail-value negative">${stats.lost}</div>
+                                <div class="stat-detail-value negative">${stats.lost.toLocaleString()}</div>
                             </div>
                         </div>
                     </div>
@@ -565,12 +576,12 @@ function updateHeaderUI() {
     if (currentUser) {
         document.getElementById('headerUsername').textContent = currentUser.username;
         document.getElementById('headerBalance').textContent = 
-            `$${currentUser.balance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+            `$${currentUser.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         document.getElementById('logoutBtn').classList.remove('hidden');
     } else {
         document.getElementById('headerUsername').textContent = 'Guest';
         document.getElementById('headerBalance').textContent = 
-            `$${guestBalance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+            `$${guestBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         document.getElementById('logoutBtn').classList.add('hidden');
     }
 }
