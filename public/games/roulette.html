@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roulette Game - Fixed</title>
+    <title>Roulette Game - Ball Wins</title>
     <style>
         .roulette-game-container {
             max-width: 1400px;
@@ -59,7 +59,6 @@
             overflow: hidden;
             background: #1a1a1a;
             box-shadow: 0 0 40px rgba(212, 175, 55, 0.6), inset 0 0 40px rgba(0,0,0,0.5);
-            transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
         }
 
         .wheel-numbers {
@@ -68,43 +67,6 @@
             height: 100%;
             top: 0;
             left: 0;
-        }
-
-        .wheel-number-slot {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            top: 50%;
-            left: 50%;
-            transform-origin: 0% 0%;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding-top: 15px;
-        }
-
-        .wheel-number-text {
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            background: rgba(0,0,0,0.3);
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
-
-        .wheel-pointer {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 40px solid #fbbf24;
-            z-index: 100;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
         }
 
         .wheel-center {
@@ -136,10 +98,16 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.7);
             z-index: 60;
             display: none;
+            transition: all 0.3s ease-out;
         }
 
         .ball.active {
             display: block;
+        }
+
+        .ball.landed {
+            box-shadow: 0 0 20px #fbbf24, 0 0 40px #fbbf24;
+            transform: scale(1.2);
         }
 
         .winning-number-display {
@@ -191,11 +159,6 @@
             min-width: 800px;
         }
 
-        .table-section {
-            display: grid;
-            gap: 2px;
-        }
-
         .numbers-grid {
             display: grid;
             grid-template-columns: repeat(14, 1fr);
@@ -240,10 +203,6 @@
             background: #2d5016;
             font-size: 14px;
             padding: 20px 10px;
-        }
-
-        .bet-cell.column-bet {
-            grid-column: span 1;
         }
 
         .bet-chip {
@@ -361,34 +320,6 @@
             margin-bottom: 10px;
             font-size: 16px;
         }
-
-        .summary-row.total {
-            font-weight: bold;
-            font-size: 18px;
-            border-top: 2px solid var(--border-color);
-            padding-top: 10px;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 768px) {
-            .wheel-wrapper {
-                width: 280px;
-                height: 280px;
-            }
-
-            .chip-option {
-                width: 50px;
-                height: 50px;
-                font-size: 12px;
-            }
-
-            .bet-cell {
-                min-width: 40px;
-                min-height: 40px;
-                padding: 10px 5px;
-                font-size: 12px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -399,11 +330,8 @@
 
         <div class="wheel-container">
             <div class="wheel-wrapper">
-                <div class="wheel-pointer"></div>
                 <div class="wheel" id="rouletteWheel">
-                    <svg class="wheel-numbers" viewBox="0 0 400 400" id="wheelSvg">
-                        <!-- Numbers will be rendered here -->
-                    </svg>
+                    <svg class="wheel-numbers" viewBox="0 0 400 400" id="wheelSvg"></svg>
                     <div class="wheel-center">ROULETTE</div>
                 </div>
                 <div class="ball" id="rouletteBall"></div>
@@ -416,7 +344,7 @@
         </div>
 
         <div class="controls-section">
-            <div class="chip-selector" id="chipSelector">
+            <div class="chip-selector">
                 <div class="chip-option chip-5 selected" onclick="RouletteGame.selectChip(5)">$5</div>
                 <div class="chip-option chip-25" onclick="RouletteGame.selectChip(25)">$25</div>
                 <div class="chip-option chip-100" onclick="RouletteGame.selectChip(100)">$100</div>
@@ -451,7 +379,6 @@
                 outside: { min: 5, max: 2500000 }
             },
 
-            // European roulette wheel order (single zero)
             numbers: [
                 {num: 0, color: 'green'},
                 {num: 32, color: 'red'}, {num: 15, color: 'black'}, {num: 19, color: 'red'}, {num: 4, color: 'black'},
@@ -492,12 +419,10 @@
                     const color = number.color === 'green' ? '#2d5016' : 
                                   number.color === 'red' ? '#c1121f' : '#1a1a1a';
                     
-                    // Create segment path
                     const pathData = `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`;
                     
                     svgContent += `<path d="${pathData}" fill="${color}" stroke="#d4af37" stroke-width="1"/>`;
                     
-                    // Add number text
                     const textAngle = (angle + nextAngle) / 2;
                     const textRadius = radius * 0.75;
                     const textX = centerX + textRadius * Math.cos(textAngle);
@@ -665,46 +590,62 @@
 
                 if (typeof GameSounds !== 'undefined') GameSounds.roulette.spin();
 
+                // Pick random winning number FIRST
                 const winningNumber = this.numbers[Math.floor(Math.random() * this.numbers.length)];
                 this.animateSpin(winningNumber);
             },
 
             animateSpin(winningNumber) {
-                const wheel = document.getElementById('rouletteWheel');
                 const ball = document.getElementById('rouletteBall');
-                
-                const winningIndex = this.numbers.findIndex(n => n.num === winningNumber.num);
-                const segmentAngle = 360 / this.numbers.length;
-                const targetAngle = -(winningIndex * segmentAngle) + (segmentAngle / 2);
-                const spins = 5;
-                const totalRotation = (360 * spins) + targetAngle;
-                
-                wheel.style.transform = `rotate(${totalRotation}deg)`;
-                
-                // Animate ball
-                ball.classList.add('active');
-                let angle = 0;
-                let speed = 25;
-                let radius = 170;
                 const centerX = 200;
                 const centerY = 200;
                 
+                // Find winning number index
+                const winningIndex = this.numbers.findIndex(n => n.num === winningNumber.num);
+                const segmentAngle = 360 / this.numbers.length;
+                
+                // Calculate final angle for the ball (where it will land)
+                const finalBallAngle = (winningIndex * segmentAngle + segmentAngle / 2);
+                
+                ball.classList.add('active');
+                
+                // Animation parameters
+                let currentAngle = 0;
+                let speed = 30;
+                let radius = 170;
+                const totalSpins = 5;
+                const targetAngle = (totalSpins * 360) + finalBallAngle;
+                
                 const ballInterval = setInterval(() => {
-                    angle += speed;
-                    speed *= 0.985;
+                    currentAngle += speed;
+                    speed *= 0.988; // Gradual slowdown
                     
-                    if (speed < 0.5) {
+                    // Check if we've reached the target
+                    if (currentAngle >= targetAngle) {
                         clearInterval(ballInterval);
-                        ball.classList.remove('active');
+                        
+                        // Position ball at exact winning number
+                        const finalRadian = (finalBallAngle - 90) * Math.PI / 180;
+                        const ballX = centerX + radius * Math.cos(finalRadian) - 10;
+                        const ballY = centerY + radius * Math.sin(finalRadian) - 10;
+                        ball.style.left = ballX + 'px';
+                        ball.style.top = ballY + 'px';
+                        ball.classList.add('landed');
+                        
                         if (typeof GameSounds !== 'undefined') GameSounds.roulette.land();
-                        setTimeout(() => this.showResult(winningNumber), 500);
+                        
+                        setTimeout(() => {
+                            ball.classList.remove('active', 'landed');
+                            this.showResult(winningNumber);
+                        }, 800);
+                    } else {
+                        // Continue spinning
+                        const radian = (currentAngle - 90) * Math.PI / 180;
+                        const x = centerX + radius * Math.cos(radian) - 10;
+                        const y = centerY + radius * Math.sin(radian) - 10;
+                        ball.style.left = x + 'px';
+                        ball.style.top = y + 'px';
                     }
-                    
-                    const radian = angle * Math.PI / 180;
-                    const x = centerX + radius * Math.cos(radian) - 10;
-                    const y = centerY + radius * Math.sin(radian) - 10;
-                    ball.style.left = x + 'px';
-                    ball.style.top = y + 'px';
                 }, 50);
             },
 
@@ -716,7 +657,7 @@
                 display.style.background = color;
                 display.style.borderColor = color;
                 display.style.color = 'white';
-                display.textContent = `${winningNumber.num}`;
+                display.textContent = `${winningNumber.num} ${winningNumber.color.toUpperCase()}`;
                 display.classList.add('show');
 
                 setTimeout(() => {
@@ -748,6 +689,10 @@
                 setTimeout(() => {
                     alert(`Winning Number: ${winningNumber.num} ${winningNumber.color.toUpperCase()}\n\nTotal Won: $${totalWon.toFixed(2)}\nProfit: ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}`);
                     
+                    document.getElementById('winningDisplay').classList.remove('show');
+                    
+                    this.clearBets();
+                    this.isSpinning = false;
                     document.getElementById('spinBtn').disabled = false;
                     this.startTimer();
                 }, 500);
@@ -791,3 +736,4 @@
         RouletteGame.init();
     </script>
 </body>
+</html>
