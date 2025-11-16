@@ -282,9 +282,13 @@ async function loadUserPage(content) {
         console.error('Failed to refresh user data:', error);
     }
     
-    // FIXED: Calculate actual profit and loss correctly
-    const actualProfit = currentUser.totalWon - currentUser.totalBet;
-    const actualLoss = currentUser.totalBet - currentUser.totalWon;
+    // CORRECT CALCULATION:
+    // Net Profit = Total Won - Total Lost
+    // Total Lost is what the user actually lost (not total bet)
+    const totalWon = parseFloat(currentUser.totalWon);
+    const totalLost = parseFloat(currentUser.totalLost);
+    const netProfit = totalWon - totalLost;
+    
     const totalGamesPlayed = Object.values(currentUser.games).reduce((sum, game) => sum + game.played, 0);
     const totalWins = Object.values(currentUser.games).reduce((sum, game) => sum + game.won, 0);
     const totalLosses = Object.values(currentUser.games).reduce((sum, game) => sum + game.lost, 0);
@@ -300,18 +304,18 @@ async function loadUserPage(content) {
                 <div class="stat-label">Total Bet</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" style="color: ${actualProfit >= 0 ? '#22c55e' : '#ef4444'}">
-                    ${actualProfit >= 0 ? '+' : ''}$${actualProfit.toFixed(0)}
+                <div class="stat-value" style="color: ${netProfit >= 0 ? '#22c55e' : '#ef4444'}">
+                    ${netProfit >= 0 ? '+' : ''}$${netProfit.toFixed(0)}
                 </div>
                 <div class="stat-label">Net Profit</div>
                 <div class="stat-details">
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Won</div>
-                        <div class="stat-detail-value positive">+$${currentUser.totalWon.toFixed(0)}</div>
+                        <div class="stat-detail-value positive">+$${totalWon.toFixed(0)}</div>
                     </div>
                     <div class="stat-detail-item">
                         <div class="stat-detail-label">Lost</div>
-                        <div class="stat-detail-value negative">-$${Math.abs(actualLoss).toFixed(0)}</div>
+                        <div class="stat-detail-value negative">-$${totalLost.toFixed(0)}</div>
                     </div>
                 </div>
             </div>
