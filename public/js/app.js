@@ -8,10 +8,45 @@ document.addEventListener('DOMContentLoaded', () => {
     favicon.type = 'image/svg+xml';
     favicon.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎰</text></svg>';
     document.head.appendChild(favicon);
-    
+
     initializeApp();
     showLoadingWarning(); // NEW: Show loading warning
 });
+
+const GAME_DESCRIPTIONS = {
+    crash: {
+        title: "How to Play Crash",
+        description: "Place your bet and watch the rocket fly! The multiplier increases as it goes higher. Your goal is to press the 'Cash Out' button BEFORE the rocket crashes. If you cash out in time, you win your bet multiplied by the current number. If the rocket crashes before you cash out, you lose your bet."
+    },
+    dice: {
+        title: "How to Play Dice",
+        description: "Set your bet amount and adjust the slider to choose your win chance. The lower the win chance, the higher the payout multiplier. Click 'Roll Dice' and if the result lands in the green winning zone, you win! You can try different strategies by adjusting the slider."
+    },
+    blackjack: {
+        title: "How to Play Blackjack",
+        description: "Your goal is to beat the dealer's hand without going over 21. You start with two cards. Click 'Hit' to get another card if you think you can get closer to 21. Click 'Stand' if you're happy with your hand. Face cards are 10, Aces are 1 or 11. If you get 21 on the first two cards, that's Blackjack!"
+    },
+    plinko: {
+        title: "How to Play Plinko",
+        description: "Select your bet amount and the risk level (Low, Medium, High). Click 'Drop Ball' to release a ball from the top. Watch it bounce down the pegs until it lands in a multiplier slot at the bottom. You win your bet multiplied by that slot's value. Higher risk levels have higher potential payouts but also lower ones!"
+    },
+    mines: {
+        title: "How to Play Mines",
+        description: "Choose your bet and the number of mines you want on the grid (more mines = higher multipliers). Click on the tiles to reveal gems. Each gem increases your win multiplier. You can press 'Cash Out' at any time to take your winnings. But be careful - if you click on a mine, you lose everything!"
+    },
+    cases: {
+        title: "How to Play Cases",
+        description: "Select a case you want to open. Each case costs a specific amount and contains a set of possible items with different rarities and values. Click 'Open Case' to spin and reveal your prize. You keep the item you win, which can be sold for balance or kept in your inventory."
+    },
+    roulette: {
+        title: "How to Play Roulette",
+        description: "Place your chips on the betting table to predict where the ball will land. You can bet on specific numbers (Straight Up), colors (Red/Black), even/odd, or groups of numbers. Once you've placed your bets, click 'Spin'. If the ball lands on a number or category you bet on, you win according to the payout table!"
+    },
+    cardpacks: {
+        title: "How to Play Card Packs",
+        description: "Choose a card pack to purchase. Each pack contains a random assortment of collectible cards with different rarities (Common, Rare, Epic, Legendary). Click 'Buy Pack' to open it and reveal your cards. Collect them all to complete sets or show off your rare finds!"
+    }
+};
 
 // NEW: Show loading warning message
 function showLoadingWarning() {
@@ -32,18 +67,18 @@ function showLoadingWarning() {
     `;
     message.innerHTML = '⚠️ If things don\'t load properly, please refresh the page';
     document.body.appendChild(message);
-    
+
     setTimeout(() => message.remove(), 5000);
 }
 
 async function initializeApp() {
     const isBackendUp = await API.healthCheck();
-    
+
     if (!isBackendUp) {
         console.warn('Backend server not available. Using guest mode only.');
         showBackendOfflineMessage();
     }
-    
+
     if (API.getToken()) {
         try {
             currentUser = await API.getProfile();
@@ -53,11 +88,11 @@ async function initializeApp() {
             currentUser = null;
         }
     }
-    
+
     if (!currentUser) {
         guestBalance = parseFloat(localStorage.getItem('guestBalance')) || 1000;
     }
-    
+
     initializeTheme();
     updateHeaderUI();
     navigateTo('main');
@@ -79,7 +114,7 @@ function showBackendOfflineMessage() {
     `;
     message.textContent = '⚠️ Backend server offline. Running in guest mode only.';
     document.body.appendChild(message);
-    
+
     setTimeout(() => message.remove(), 5000);
 }
 
@@ -88,7 +123,7 @@ function toggleMenu() {
     const overlay = document.getElementById('menuOverlay');
     const hamburger = document.getElementById('hamburgerBtn');
     const content = document.querySelector('.main-content');
-    
+
     menu.classList.toggle('open');
     overlay.classList.toggle('active');
     hamburger.classList.toggle('active');
@@ -98,8 +133,8 @@ function toggleMenu() {
 async function navigateTo(page) {
     currentPage = page;
     const content = document.getElementById('mainContent');
-    
-    switch(page) {
+
+    switch (page) {
         case 'main':
             loadMainPage(content);
             break;
@@ -148,7 +183,7 @@ async function navigateTo(page) {
         default:
             loadMainPage(content);
     }
-    
+
     window.scrollTo(0, 0);
 }
 
@@ -282,22 +317,22 @@ function formatMoney(amount) {
 
 async function loadUserPage(content) {
     if (!currentUser) return;
-    
+
     try {
         currentUser = await API.getProfile();
     } catch (error) {
         console.error('Failed to refresh user data:', error);
     }
-    
+
     // Correct calculation: Net Profit = Total Won - Total Lost
     const totalWon = parseFloat(currentUser.totalWon);
     const totalLost = parseFloat(currentUser.totalLost);
     const netProfit = totalWon - totalLost;
-    
+
     const totalGamesPlayed = Object.values(currentUser.games).reduce((sum, game) => sum + game.played, 0);
     const totalWins = Object.values(currentUser.games).reduce((sum, game) => sum + game.won, 0);
     const totalLosses = Object.values(currentUser.games).reduce((sum, game) => sum + game.lost, 0);
-    
+
     content.innerHTML = `
         <button class="back-btn" onclick="navigateTo('main')">← Back</button>
         <div class="level-section">
@@ -345,17 +380,17 @@ async function loadUserPage(content) {
                 </div>
             </div>
             ${Object.entries(currentUser.games).map(([game, stats]) => {
-                const icons = { 
-                    crash: '🚀', 
-                    dice: '🎲', 
-                    blackjack: '🃏', 
-                    plinko: '🎯', 
-                    mines: '💎', 
-                    cases: '📦', 
-                    roulette: '🛞', 
-                    cardpacks: '🎴' 
-                };
-                return `
+        const icons = {
+            crash: '🚀',
+            dice: '🎲',
+            blackjack: '🃏',
+            plinko: '🎯',
+            mines: '💎',
+            cases: '📦',
+            roulette: '🛞',
+            cardpacks: '🎴'
+        };
+        return `
                     <div class="stat-card">
                         <div class="stat-value" style="font-size: clamp(18px, 3vw, 30px);">${stats.played.toLocaleString()}</div>
                         <div class="stat-label">${icons[game]} ${game.charAt(0).toUpperCase() + game.slice(1)} Games</div>
@@ -371,7 +406,7 @@ async function loadUserPage(content) {
                         </div>
                     </div>
                 `;
-            }).join('')}
+    }).join('')}
         </div>
         <div style="margin-top: 40px; text-align: center;">
             <button class="delete-account-btn" onclick="confirmDeleteAccount()">
@@ -381,7 +416,7 @@ async function loadUserPage(content) {
     `;
 }
 
-Ranking.getUserRankHTML = function(user) {
+Ranking.getUserRankHTML = function (user) {
     const rank = this.getRank(user.xp);
     const progress = this.getXPProgress(user.xp, rank.index);
 
@@ -403,15 +438,15 @@ Ranking.getUserRankHTML = function(user) {
 
 async function loadRanksPage(content) {
     content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back</button>`;
-    
+
     try {
         const response = await fetch('ranks.html');
         const html = await response.text();
-        
+
         const ranksContainer = document.createElement('div');
         ranksContainer.innerHTML = html;
         content.appendChild(ranksContainer);
-        
+
         const scripts = ranksContainer.querySelectorAll('script');
         scripts.forEach(script => {
             const newScript = document.createElement('script');
@@ -432,15 +467,15 @@ async function loadRanksPage(content) {
 
 async function loadSettingsPage(content) {
     content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back</button>`;
-    
+
     try {
         const response = await fetch('settings.html');
         const html = await response.text();
-        
+
         const settingsContainer = document.createElement('div');
         settingsContainer.innerHTML = html;
         content.appendChild(settingsContainer);
-        
+
         const scripts = settingsContainer.querySelectorAll('script');
         scripts.forEach(script => {
             const newScript = document.createElement('script');
@@ -502,12 +537,12 @@ function loadShopPage(content) {
 
 async function loadLeaderboardPage(content) {
     const games = ['xp', 'crash', 'dice', 'blackjack', 'plinko', 'mines', 'cases', 'roulette', 'cardpacks'];
-    const icons = { 
+    const icons = {
         xp: '🏆',
-        crash: '🚀', 
-        dice: '🎲', 
-        blackjack: '🃏', 
-        plinko: '🎯', 
+        crash: '🚀',
+        dice: '🎲',
+        blackjack: '🃏',
+        plinko: '🎯',
         mines: '💎',
         cases: '📦',
         roulette: '🛞',
@@ -524,7 +559,7 @@ async function loadLeaderboardPage(content) {
         roulette: 'Roulette',
         cardpacks: 'Card Packs'
     };
-    
+
     content.innerHTML = `
         <button class="back-btn" onclick="navigateTo('main')">← Back</button>
         <div class="leaderboard-container">
@@ -532,28 +567,32 @@ async function loadLeaderboardPage(content) {
             <div id="leaderboardContent"></div>
         </div>
     `;
-    
+
     const tabsHTML = games.map(game => `
         <div class="game-tab ${game === 'xp' ? 'active' : ''}" onclick="Leaderboard.showGame('${game}')">
             ${icons[game]} ${names[game]}
         </div>
     `).join('');
-    
+
     document.getElementById('leaderboardTabs').innerHTML = tabsHTML;
     await Leaderboard.showGame('xp');
 }
 
 async function loadGamePage(content, game) {
     content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
-    
+
     try {
         const response = await fetch(`games/${game}.html`);
         const html = await response.text();
-        
+
         const gameContainer = document.createElement('div');
         gameContainer.innerHTML = html;
+
+        // NEW: Inject Info Button using helper
+        injectInfoButton(gameContainer, game);
+
         content.appendChild(gameContainer);
-        
+
         const scripts = gameContainer.querySelectorAll('script');
         scripts.forEach(script => {
             const newScript = document.createElement('script');
@@ -575,12 +614,12 @@ async function loadGamePage(content, game) {
 function updateHeaderUI() {
     if (currentUser) {
         document.getElementById('headerUsername').textContent = currentUser.username;
-        document.getElementById('headerBalance').textContent = 
+        document.getElementById('headerBalance').textContent =
             `$${currentUser.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         document.getElementById('logoutBtn').classList.remove('hidden');
     } else {
         document.getElementById('headerUsername').textContent = 'Guest';
-        document.getElementById('headerBalance').textContent = 
+        document.getElementById('headerBalance').textContent =
             `$${guestBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         document.getElementById('logoutBtn').classList.add('hidden');
     }
@@ -719,6 +758,7 @@ function updateCooldownTimer(timeRemaining) {
     const seconds = Math.floor((timeRemaining % 60000) / 1000);
     cooldownTimer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
+
     if (timeRemaining > 0) {
         setTimeout(() => updateCooldownTimer(timeRemaining - 1000), 1000);
     } else {
@@ -727,6 +767,80 @@ function updateCooldownTimer(timeRemaining) {
         document.querySelector('.modal-btn-confirm').style.opacity = '1';
         depositTotal = 0;
     }
+}
+
+// NEW: Helper function to inject info button
+function injectInfoButton(container, gameId) {
+    // List of possible main container classes
+    const containerClasses = [
+        '[class*="game-container"]',
+        '.cases-container',
+        '.packs-container',
+        '.roulette-game-container',
+        '.crash-game-container',
+        '.dice-container'
+    ];
+
+    let targetContainer = null;
+
+    // Try to find a matching container
+    for (const selector of containerClasses) {
+        targetContainer = container.querySelector(selector);
+        if (targetContainer) break;
+    }
+
+    // Fallback to first element child if it's a DIV and not a script/style
+    if (!targetContainer && container.firstElementChild) {
+        let candidate = container.firstElementChild;
+        while (candidate && (candidate.tagName === 'SCRIPT' || candidate.tagName === 'STYLE' || candidate.tagName === 'LINK')) {
+            candidate = candidate.nextElementSibling;
+        }
+        if (candidate && candidate.tagName === 'DIV') {
+            targetContainer = candidate;
+        }
+    }
+
+    if (targetContainer) {
+        const infoBtn = document.createElement('div');
+        infoBtn.className = 'game-info-btn';
+        infoBtn.innerHTML = 'i';
+        infoBtn.onclick = (e) => {
+            e.stopPropagation(); // Prevent bubbling
+            showGameInfo(gameId);
+        };
+        infoBtn.title = 'How to Play';
+
+        // Ensure the container has relative positioning so absolute positioning of button works
+        // We check inline style first, but for computed style we'd need it to be in DOM.
+        // Safest is to force relative if we're not sure, but we don't want to break absolute layouts.
+        // Most game containers are block/static by default.
+        if (targetContainer.style.position !== 'absolute' && targetContainer.style.position !== 'fixed') {
+            targetContainer.style.position = 'relative';
+        }
+
+        targetContainer.appendChild(infoBtn);
+    }
+}
+
+function showGameInfo(gameId) {
+    const info = GAME_DESCRIPTIONS[gameId];
+    if (!info) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>${info.title}</h2>
+            <p style="color: var(--text-secondary); margin: 20px 0; line-height: 1.6; text-align: left;">
+                ${info.description}
+            </p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" onclick="this.closest('.modal').remove()">Got it!</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
 
 async function processAddFunds() {
@@ -821,7 +935,7 @@ async function requestPasswordReset() {
     try {
         const result = await API.forgotPassword(username);
         document.querySelector('.modal').remove();
-        
+
         // Show code input modal
         showResetCodeModal(result.message);
     } catch (error) {
@@ -886,7 +1000,7 @@ async function confirmPasswordReset() {
     try {
         await API.resetPassword(token, newPassword);
         document.querySelector('.modal').remove();
-        
+
         const successModal = document.createElement('div');
         successModal.className = 'modal';
         successModal.style.display = 'block';
@@ -929,11 +1043,11 @@ async function deleteAccount() {
     try {
         await API.deleteAccount();
         document.querySelector('.modal').remove();
-        
+
         currentUser = null;
         updateHeaderUI();
         navigateTo('main');
-        
+
         alert('Account deleted successfully');
     } catch (error) {
         alert('Failed to delete account: ' + error.message);
@@ -988,7 +1102,7 @@ async function updateGameStats(game, won, betAmount, winAmount) {
         if (won) {
             const oldRank = Ranking.getRank(currentUser.xp);
             const winMultiplier = winAmount / betAmount;
-            
+
             // Award XP based on win
             let totalXP = 10; // Base XP
             if (winMultiplier > 10) totalXP += 10;
@@ -1019,15 +1133,15 @@ function showRankUpNotification(newRank) {
 
 const Leaderboard = {
     currentGame: 'xp',
-    
+
     async showGame(game) {
         this.currentGame = game;
-        
+
         document.querySelectorAll('.game-tab').forEach(tab => {
             tab.classList.remove('active');
         });
         event.target.classList.add('active');
-        
+
         try {
             let leaderboard;
             if (game === 'xp') {
@@ -1035,19 +1149,19 @@ const Leaderboard = {
             } else {
                 leaderboard = await API.getLeaderboard(game);
             }
-            
-            const icons = { 
+
+            const icons = {
                 xp: '🏆',
-                crash: '🚀', 
-                dice: '🎲', 
-                blackjack: '🃏', 
-                plinko: '🎯', 
+                crash: '🚀',
+                dice: '🎲',
+                blackjack: '🃏',
+                plinko: '🎯',
                 mines: '💎',
                 cases: '📦',
                 roulette: '🛞',
                 cardpacks: '🎴'
             };
-            
+
             const names = {
                 xp: 'XP Rankings',
                 crash: 'Crash',
@@ -1059,9 +1173,9 @@ const Leaderboard = {
                 roulette: 'Roulette',
                 cardpacks: 'Card Packs'
             };
-            
+
             let html = `<h2>${icons[game]} ${names[game]} Leaderboard</h2>`;
-            
+
             if (leaderboard.length === 0) {
                 html += '<div style="text-align: center; color: var(--text-secondary); padding: 40px;">No data yet</div>';
             } else {
@@ -1083,14 +1197,14 @@ const Leaderboard = {
                     const isProfitBased = game === 'cases' || game === 'cardpacks';
                     leaderboard.forEach((user, index) => {
                         const isCurrentUser = currentUser && user.username === currentUser.username;
-                        const displayValue = isProfitBased 
+                        const displayValue = isProfitBased
                             ? `$${parseFloat(user.total_profit).toFixed(0)} ${parseFloat(user.total_profit) >= 0 ? 'profit' : 'loss'}`
                             : `${user.won} wins`;
-                        
-                        const valueColor = isProfitBased 
+
+                        const valueColor = isProfitBased
                             ? (parseFloat(user.total_profit) >= 0 ? '#22c55e' : '#ef4444')
                             : '#22c55e';
-                        
+
                         html += `
                             <div class="leaderboard-item ${isCurrentUser ? 'highlight' : ''}">
                                 <div class="leaderboard-rank">#${index + 1}</div>
@@ -1101,10 +1215,10 @@ const Leaderboard = {
                     });
                 }
             }
-            
+
             document.getElementById('leaderboardContent').innerHTML = html;
         } catch (error) {
-            document.getElementById('leaderboardContent').innerHTML = 
+            document.getElementById('leaderboardContent').innerHTML =
                 '<div style="text-align: center; color: #ef4444; padding: 40px;">Failed to load leaderboard</div>';
         }
     }
@@ -1119,7 +1233,7 @@ function initializeTheme() {
 function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
+
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('casinoTheme', newTheme);
     updateThemeUI(newTheme);
@@ -1128,7 +1242,7 @@ function toggleTheme() {
 function updateThemeUI(theme) {
     const themeIcon = document.getElementById('themeIcon');
     const themeText = document.getElementById('themeText');
-    
+
     if (theme === 'dark') {
         themeIcon.textContent = '☀️';
         themeText.textContent = 'Light Mode';
@@ -1140,15 +1254,19 @@ function updateThemeUI(theme) {
 
 async function loadCasesPage(content) {
     content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
-    
+
     try {
         const response = await fetch('games/cases.html');
         const html = await response.text();
-        
+
         const gameContainer = document.createElement('div');
         gameContainer.innerHTML = html;
+
+        // NEW: Inject Info Button
+        injectInfoButton(gameContainer, 'cases');
+
         content.appendChild(gameContainer);
-        
+
         const scripts = gameContainer.querySelectorAll('script');
         scripts.forEach(script => {
             const newScript = document.createElement('script');
@@ -1162,15 +1280,19 @@ async function loadCasesPage(content) {
 
 async function loadRoulettePage(content) {
     content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
-    
+
     try {
         const response = await fetch('games/roulette.html');
         const html = await response.text();
-        
+
         const gameContainer = document.createElement('div');
         gameContainer.innerHTML = html;
+
+        // NEW: Inject Info Button
+        injectInfoButton(gameContainer, 'roulette');
+
         content.appendChild(gameContainer);
-        
+
         const scripts = gameContainer.querySelectorAll('script');
         scripts.forEach(script => {
             const newScript = document.createElement('script');
@@ -1191,15 +1313,19 @@ async function loadRoulettePage(content) {
 
 async function loadCardPacksPage(content) {
     content.innerHTML = `<button class="back-btn" onclick="navigateTo('main')">← Back to Games</button>`;
-    
+
     try {
         const response = await fetch('games/cardpacks.html');
         const html = await response.text();
-        
+
         const gameContainer = document.createElement('div');
         gameContainer.innerHTML = html;
+
+        // NEW: Inject Info Button
+        injectInfoButton(gameContainer, 'cardpacks');
+
         content.appendChild(gameContainer);
-        
+
         const scripts = gameContainer.querySelectorAll('script');
         scripts.forEach(script => {
             const newScript = document.createElement('script');

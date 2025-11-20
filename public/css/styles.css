@@ -269,16 +269,20 @@ body {
     padding: 15px;
     text-align: center;
     box-shadow: 0 5px 15px var(--card-shadow);
-    overflow: hidden; /* Prevent overflow */
-    min-width: 0; /* Allow flex items to shrink below content size */
+    overflow: hidden;
+    /* Prevent overflow */
+    min-width: 0;
+    /* Allow flex items to shrink below content size */
 }
 
 .stat-value {
-    font-size: clamp(20px, 4vw, 30px); /* Responsive sizing */
+    font-size: clamp(20px, 4vw, 30px);
+    /* Responsive sizing */
     font-weight: bold;
     color: #667eea;
     margin-bottom: 5px;
-    word-break: break-word; /* Break long numbers if needed */
+    word-break: break-word;
+    /* Break long numbers if needed */
     line-height: 1.2;
     overflow-wrap: break-word;
 }
@@ -286,7 +290,8 @@ body {
 .stat-label {
     color: var(--text-secondary);
     font-size: clamp(12px, 2vw, 14px);
-    white-space: normal; /* Allow wrapping */
+    white-space: normal;
+    /* Allow wrapping */
 }
 
 .stat-details {
@@ -302,7 +307,8 @@ body {
 .stat-detail-item {
     display: flex;
     flex-direction: column;
-    min-width: 0; /* Allow shrinking */
+    min-width: 0;
+    /* Allow shrinking */
     flex: 1;
 }
 
@@ -316,7 +322,8 @@ body {
     color: var(--text-secondary);
     font-weight: 600;
     font-size: clamp(10px, 2vw, 13px);
-    word-break: break-word; /* Handle long numbers */
+    word-break: break-word;
+    /* Handle long numbers */
     line-height: 1.2;
 }
 
@@ -460,8 +467,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .modal-content {
@@ -481,6 +493,7 @@ body {
         transform: translateY(-50px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -558,7 +571,7 @@ body {
     right: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
 }
 
 .card-chip {
@@ -568,7 +581,7 @@ body {
     border-radius: 6px;
     margin-bottom: 25px;
     position: relative;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .card-number {
@@ -585,11 +598,12 @@ body {
     font-size: 13px;
 }
 
-.card-holder, .card-expiry {
+.card-holder,
+.card-expiry {
     position: relative;
 }
 
-.card-holder div:last-child, 
+.card-holder div:last-child,
 .card-expiry div:last-child {
     font-size: 15px;
     font-weight: bold;
@@ -620,9 +634,11 @@ body {
     0% {
         transform: scale(0);
     }
+
     50% {
         transform: scale(1.2);
     }
+
     100% {
         transform: scale(1);
     }
@@ -685,15 +701,15 @@ body {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .stat-card {
         padding: 12px;
     }
-    
+
     .stat-value {
         font-size: clamp(18px, 5vw, 24px);
     }
-    
+
     .balance-display {
         font-size: 14px;
         padding: 8px 15px;
@@ -733,4 +749,39 @@ body {
     .card-number {
         font-size: 18px;
     }
+}
+
+/* Game Info Button */
+/* Game Info Button */
+.game-info-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 30px;
+    height: 30px;
+    background: var(--card-bg);
+    /* Use theme card background */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    /* Use theme text color */
+    font-weight: bold;
+    font-family: serif;
+    font-style: italic;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 100;
+    /* Increased z-index */
+    border: 2px solid var(--text-secondary);
+    /* Use theme border color */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.game-info-btn:hover {
+    background: var(--text-primary);
+    color: var(--card-bg);
+    transform: scale(1.1);
+    border-color: var(--text-primary);
 }
